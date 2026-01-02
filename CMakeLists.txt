@@ -1,0 +1,77 @@
+cmake_minimum_required(VERSION 4.1)
+project(SuiteSparse)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(SuiteSparse/AMD/Include)
+include_directories(SuiteSparse/include)
+include_directories(SuiteSparse/include/suitesparse)
+include_directories(SuiteSparse/SuiteSparse_config)
+include_directories(cpython/Include)
+
+add_executable(SuiteSparse
+        src/_amd.c
+        _hello.c
+        SuiteSparse/AMD/Include/amd.h
+        SuiteSparse/AMD/Include/amd_internal.h
+        SuiteSparse/AMD/Source/amd_1.c
+        SuiteSparse/AMD/Source/amd_2.c
+        SuiteSparse/AMD/Source/amd_aat.c
+        SuiteSparse/AMD/Source/amd_control.c
+        SuiteSparse/AMD/Source/amd_defaults.c
+        SuiteSparse/AMD/Source/amd_dump.c
+        SuiteSparse/AMD/Source/amd_info.c
+        SuiteSparse/AMD/Source/amd_l1.c
+        SuiteSparse/AMD/Source/amd_l2.c
+        SuiteSparse/AMD/Source/amd_l_aat.c
+        SuiteSparse/AMD/Source/amd_l_control.c
+        SuiteSparse/AMD/Source/amd_l_defaults.c
+        SuiteSparse/AMD/Source/amd_l_dump.c
+        SuiteSparse/AMD/Source/amd_l_info.c
+        SuiteSparse/AMD/Source/amd_l_order.c
+        SuiteSparse/AMD/Source/amd_l_post_tree.c
+        SuiteSparse/AMD/Source/amd_l_postorder.c
+        SuiteSparse/AMD/Source/amd_l_preprocess.c
+        SuiteSparse/AMD/Source/amd_l_valid.c
+        SuiteSparse/AMD/Source/amd_order.c
+        SuiteSparse/AMD/Source/amd_post_tree.c
+        SuiteSparse/AMD/Source/amd_postorder.c
+        SuiteSparse/AMD/Source/amd_preprocess.c
+        SuiteSparse/AMD/Source/amd_valid.c
+        SuiteSparse/AMD/Source/amd_version.c
+        SuiteSparse/include/suitesparse/SuiteSparse_config.h
+        SuiteSparse/lib/cmake/SuiteSparse/check_mkl.c
+        SuiteSparse/lib/cmake/SuiteSparse/check_openblas_Apr2024.c
+        SuiteSparse/lib/cmake/SuiteSparse/check_openblas_Mar2015.c
+        SuiteSparse/SuiteSparse_config/build/cmake_install.cmake
+        SuiteSparse/SuiteSparse_config/build/CMakeCache.txt
+        SuiteSparse/SuiteSparse_config/build/install_manifest.txt
+        SuiteSparse/SuiteSparse_config/build/libsuitesparseconfig.a
+        SuiteSparse/SuiteSparse_config/build/libsuitesparseconfig.so.7.12.1
+        SuiteSparse/SuiteSparse_config/build/Makefile
+        SuiteSparse/SuiteSparse_config/build/SuiteSparse_config.pc
+        SuiteSparse/SuiteSparse_config/build/SuiteSparse_config.pc.out
+        SuiteSparse/SuiteSparse_config/build/SuiteSparse_configConfig.cmake
+        SuiteSparse/SuiteSparse_config/build/SuiteSparse_configConfigVersion.cmake
+        SuiteSparse/SuiteSparse_config/build/SuiteSparse_configTargets.cmake
+        SuiteSparse/SuiteSparse_config/build/SuiteSparse_configTargets_static.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/check_mkl.c
+        SuiteSparse/SuiteSparse_config/cmake_modules/check_openblas_Apr2024.c
+        SuiteSparse/SuiteSparse_config/cmake_modules/check_openblas_Mar2015.c
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparse__blas_threading.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparse__thread.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparseBLAS.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparseBLAS32.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparseBLAS64.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparseLAPACK.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparsePolicy.cmake
+        SuiteSparse/SuiteSparse_config/cmake_modules/SuiteSparseReport.cmake
+        SuiteSparse/SuiteSparse_config/Config/README.md.in
+        SuiteSparse/SuiteSparse_config/Config/SuiteSparse_config.h.in
+        SuiteSparse/SuiteSparse_config/Config/SuiteSparse_config.pc.in
+        SuiteSparse/SuiteSparse_config/Config/SuiteSparse_configConfig.cmake.in
+        SuiteSparse/SuiteSparse_config/CMakeLists.txt
+        SuiteSparse/SuiteSparse_config/Makefile
+        SuiteSparse/SuiteSparse_config/README.txt
+        SuiteSparse/SuiteSparse_config/SuiteSparse_config.c
+        SuiteSparse/SuiteSparse_config/SuiteSparse_config.h)
