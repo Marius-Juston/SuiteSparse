@@ -8,3 +8,16 @@ This package currently only works with Numpy arrays.
 
 - Work with PyTorch CPU Tensors
 - 2D Python iterables
+
+# Source Installation
+
+```bash
+pip install https://github.com/Marius-Juston/SuiteSparse.git
+```
+
+
+# Compile Source
+
+```bash
+python3 -m build --wheel --sdist
+```
