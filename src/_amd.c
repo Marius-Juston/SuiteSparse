@@ -1,0 +1,302 @@
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
+#include <math.h>
+
+#include "amd.h"
+
+
+static inline int read_numeric(const Py_buffer *view, const char *ptr, double *out) {
+    if (strcmp(view->format, "f") == 0) {
+        *out = *(float *) ptr;
+    } else if (strcmp(view->format, "d") == 0) {
+        *out = *(double *) ptr;
+    } else if (strcmp(view->format, "b") == 0) {
+        *out = *(int8_t *) ptr;
+    } else if (strcmp(view->format, "B") == 0) {
+        *out = *(uint8_t *) ptr;
+    } else if (strcmp(view->format, "h") == 0) {
+        *out = *(int16_t *) ptr;
+    } else if (strcmp(view->format, "H") == 0) {
+        *out = *(uint16_t *) ptr;
+    } else if (strcmp(view->format, "i") == 0) {
+        *out = *(int32_t *) ptr;
+    } else if (strcmp(view->format, "I") == 0) {
+        *out = *(uint32_t *) ptr;
+    } else if (strcmp(view->format, "l") == 0) {
+        *out = *(long *) ptr;
+    } else if (strcmp(view->format, "q") == 0) {
+        *out = *(int64_t *) ptr;
+    } else if (strcmp(view->format, "?") == 0) {
+        *out = *(char *) ptr;
+    } else {
+        PyErr_Format(PyExc_TypeError, "Unsupported buffer format '%s' is unrecognized", view->format);
+
+        return 0;
+    }
+
+    return isfinite(*out);
+}
+
+static inline int copy_array(const int32_t *array, const size_t size, PyObject *list) {
+    for (size_t i = 0; i < size; i++) {
+        PyObject *idx = PyLong_FromLong(array[i]);
+
+        if (!idx) {
+            return 0;
+        }
+
+        PyList_SET_ITEM(list, i, idx);
+    }
+
+    return 1;
+}
+
+static inline int copy_arrayd(const double *array, const size_t size, PyObject *list) {
+    for (size_t i = 0; i < size; i++) {
+        PyObject *data = PyLong_FromDouble(array[i]);
+
+        if (!data) {
+            return 0;
+        }
+
+        PyList_SET_ITEM(list, i, data);
+    }
+
+    return 1;
+}
+
+typedef int (sparse_order)(int32_t, const int32_t *, const int32_t *, int32_t *, double *, double *);
+
+/*
+ * For current structure leaving it so that it could be exanded to other types of methods and systems
+ */
+static PyObject *_sparse_system(PyObject *self, PyObject *args, PyObject *kwargs, void version_fnc(int *),
+                                void defaults_fnc(double *), void control_fnc(double *), sparse_order order_fnc,
+                                void info_fnc(double *)) {
+    PyObject *obj;
+    int verbose = 0;
+    int aggressive = AMD_DEFAULT_AGGRESSIVE;
+    double dense = AMD_DEFAULT_DENSE;
+
+    Py_buffer view;
+
+    static char *kwlist[] = {"matrix", "dense", "aggressive", "verbose", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dpp", kwlist, &obj, &dense, &aggressive, &verbose)) {
+        return NULL;
+    }
+
+
+    if (PyObject_GetBuffer(obj, &view, PyBUF_FORMAT | PyBUF_STRIDED | PyBUF_ND) == -1) {
+        return NULL;
+    }
+
+    if (view.ndim != 2) {
+        PyErr_SetString(PyExc_ValueError, "Expected 2 dimensional arrays");
+        PyBuffer_Release(&view);
+        return NULL;
+    }
+
+    const Py_ssize_t rows = view.shape[0];
+    const Py_ssize_t cols = view.shape[1];
+
+    if (rows != cols) {
+        PyErr_SetString(PyExc_ValueError, "Expected a square matrix with equal number of rows and columns");
+        goto fail;
+    }
+
+    const int32_t n = (int32_t) rows;
+
+    const char *data = view.buf;
+    int32_t count = 0;
+    double value;
+
+    int32_t *Ap = PyMem_Calloc(rows + 1, sizeof(int32_t));
+    if (!Ap) {
+        PyErr_NoMemory();
+        goto fail;
+    }
+    Ap[0] = 0;
+
+    for (Py_ssize_t i = 0; i < rows; i++) {
+        for (Py_ssize_t j = 0; j < cols; j++) {
+            const char *ptr = data + i * view.strides[0]
+                              + j * view.strides[1];
+
+            if (!read_numeric(&view, ptr, &value)) {
+                PyErr_SetString(PyExc_ValueError, "Unsupported dtype or NaN/Inf encountered");
+                goto fail;
+            }
+
+            if (value != 0) {
+                ++count;
+            }
+        }
+
+        Ap[i + 1] = count;
+    }
+
+    int32_t *Ai = PyMem_Calloc(count, sizeof(int32_t));
+    if (!Ai) {
+        PyErr_NoMemory();
+        goto fail;
+    }
+
+    size_t index = 0;
+
+    for (Py_ssize_t i = 0; i < rows; i++) {
+        for (Py_ssize_t j = 0; j < cols; j++) {
+            const char *ptr = data + i * view.strides[0]
+                              + j * view.strides[1];
+
+            if (!read_numeric(&view, ptr, &value)) {
+                PyErr_SetString(PyExc_ValueError, "Unsupported dtype or NaN/Inf encountered");
+                goto fail;
+            }
+
+            if (value != 0) {
+                Ai[index++] = (int32_t) j;
+            }
+
+            if (index >= count) {
+                goto loop_exit;
+            }
+        }
+    }
+
+loop_exit:
+
+
+    int *version = PyMem_Calloc(3, sizeof(int));
+    if (!version) {
+        PyErr_NoMemory();
+        goto fail;
+    }
+
+    if (verbose) {
+        version_fnc(version);
+    }
+
+    double *Control = PyMem_Calloc(AMD_CONTROL, sizeof(double));
+    if (!Control) {
+        PyErr_NoMemory();
+        goto fail;
+    }
+
+    defaults_fnc(Control);
+
+    if (dense != AMD_DEFAULT_DENSE) {
+        Control[AMD_DENSE] = dense;
+    }
+    if (aggressive != AMD_DEFAULT_AGGRESSIVE) {
+        Control[AMD_AGGRESSIVE] = aggressive;
+    }
+
+    if (verbose) {
+        control_fnc(Control);
+    }
+
+    double *Info = PyMem_Calloc(AMD_INFO, sizeof(double));
+    if (!Info) {
+        PyErr_NoMemory();
+        goto fail;
+    }
+    int32_t *P = PyMem_Calloc(n, sizeof(int32_t));
+    if (!P) {
+        PyErr_NoMemory();
+        goto fail;
+    }
+
+    const int32_t result = order_fnc(n, Ap, Ai, P, Control, Info);
+
+    if (verbose) {
+        info_fnc(Info);
+    }
+
+    //TODO Generalize this for other function types
+    if (result != AMD_OK) {
+        if (result == AMD_OK_BUT_JUMBLED) {
+            PyErr_WarnEx(PyExc_RuntimeWarning,
+                         "Input matrix is OK for amd_order, but columns were not sorted, and/or duplicate entries were present. AMD had to do extra work before ordering the matrix. This is a warning, not an error.",
+                         1);
+        } else {
+            if (result == AMD_OUT_OF_MEMORY) {
+                PyErr_NoMemory();
+            } else if (result == AMD_INFO) {
+                PyErr_SetString(PyExc_ValueError, "Input arguments are not valid to the ordering");
+            } else {
+                PyErr_SetString(PyExc_ValueError, "Ordering failed");
+            }
+            goto fail;
+        }
+    }
+
+    PyObject *permutation = PyList_New(n);
+    if (!permutation) {
+        goto fail;
+    }
+
+    if (!copy_array(P, n, permutation)) {
+        goto fail;
+    }
+
+    PyObject *info = PyList_New(AMD_INFO);
+    if (!info) {
+        goto fail;
+    }
+
+    if (!copy_arrayd(Info, AMD_INFO, info)) {
+        goto fail;
+    }
+
+    PyObject *out = PyTuple_New(2);
+    if (!out) {
+        goto fail;
+    }
+
+    PyTuple_SET_ITEM(out, 0, permutation);
+    PyTuple_SET_ITEM(out, 1, info);
+
+    PyMem_Free(Ap);
+    PyMem_Free(Ai);
+
+    PyMem_Free(version);
+    PyMem_Free(Control);
+    PyMem_Free(Info);
+    PyMem_Free(P);
+
+    PyBuffer_Release(&view);
+
+    return out;
+
+fail:
+    PyBuffer_Release(&view);
+    return NULL;
+}
+
+static PyObject *_amd(PyObject *self, PyObject *args, PyObject *kwargs) {
+    return _sparse_system(self, args, kwargs, &amd_version, &amd_defaults, &amd_control, &amd_order, &amd_info);
+}
+
+
+static struct PyMethodDef methods[] = {
+    {
+        "amd", (PyCFunction) _amd, METH_VARARGS | METH_KEYWORDS,
+        "Converts a dense symmetric matrix to CSC format and then performs AMD ( Approximate Minimum Degree ), returns the permutation matrix P."
+    },
+    {NULL, NULL, 0, NULL}
+};
+
+static struct PyModuleDef module = {
+    PyModuleDef_HEAD_INIT,
+    "_amd",
+    NULL,
+    -1,
+    methods
+};
+
+
+PyMODINIT_FUNC PyInit__amd(void) {
+    return PyModule_Create(&module);
+}
