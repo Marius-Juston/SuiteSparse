@@ -22,3 +22,9 @@ pip install git+https://github.com/Marius-Juston/SuiteSparse.git
 ```bash
 python3 -m build --wheel --sdist
 ```
+
+# Publish
+
+```bash
+bumpver update --tag-commit --patch --push
+```
