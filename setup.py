@@ -15,12 +15,17 @@ amd_config_sources = glob(os.path.join(amd_config_dir, "*.c"))
 
 define_macros = []
 
+compilation_flags = []
+
 if sys.platform == "win32":
     define_macros += [
         ("SUITESPARSE_HAVE_CLOCK_GETTIME", "0"),
         ("SUITESPARSE_CONFIG_HAS_OPENMP", "0"),
         ("SUITESPARSE_TIMER_ENABLED", "0"),
     ]
+    compilation_flags += ['/O2', "-DNTIMER"]
+else:
+    compilation_flags += ['-O3']
 
 setup(version="0.1.0",
       ext_modules=[Extension(name="suitesparse_amd._amd",
@@ -28,4 +33,4 @@ setup(version="0.1.0",
                              include_dirs=[amd_include_dir, amd_config_dir],
                              language="c",
                              define_macros=define_macros,
-                             extra_compile_args=["-O3"], )])
+                             extra_compile_args=compilation_flags, )])
