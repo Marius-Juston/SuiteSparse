@@ -27,7 +27,7 @@ if sys.platform == "win32":
 else:
     compilation_flags += ['-O3']
 
-setup(version="0.1.3",
+setup(version="0.1.4",
       ext_modules=[Extension(name="suitesparse_amd._amd",
                              sources=['src/suitesparse_amd/_amd.c'] + amd_sources + amd_config_sources,
                              include_dirs=[amd_include_dir, amd_config_dir],
