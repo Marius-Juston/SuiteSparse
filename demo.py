@@ -1,17 +1,24 @@
 from pprint import pprint
 
 import _amd
+import matplotlib.pyplot as plt
 import numpy as np
 
 if __name__ == '__main__':
-    n = 100
+    n = 10
 
-    a = np.random.randint(2, size=(n, n))
+    a = np.eye(n)
+    a[-1][0] = 1
+    a[0][-1] = 1
+    a[0, 0] = 2
 
-    sym = a @ a.T + np.eye(n)
+    sym = a
+    # sym = a @ a.T + np.eye(n)
     print(sym)
 
-    P = _amd.amd(sym)
+    P, info = _amd.amd(sym, verbose=True, aggressive=True, dense=10.0)
+
+    print(info)
 
     print(P)
     full_P = np.zeros((n, n))
@@ -23,6 +30,28 @@ if __name__ == '__main__':
     Lbase = np.linalg.cholesky(sym)
     pprint(np.around(Lbase, 1))
 
-    Lnew = np.linalg.cholesky(full_P @ sym @ full_P.T)
+    modified_sym = full_P @ sym @ full_P.T
+
+    Lnew = np.linalg.cholesky(modified_sym)
 
     pprint(np.around(Lnew, 1))
+
+    fig, axes = plt.subplots(2, 2, figsize=(5,5))
+
+    axes[0][0].set_title("Original")
+    axes[0][0].imshow(sym)
+    axes[0][1].set_title("Ordered")
+    axes[0][1].imshow(modified_sym)
+
+    mask = Lbase == 0
+    mask_n = Lnew == 0
+
+    axes[1][0].imshow(Lbase != 0)
+    axes[1][1].imshow(Lnew != 0)
+
+    plt.tight_layout()
+
+    plt.savefig("demo.png")
+
+    print("Number of zeros:")
+    print("Previous: ", mask.sum(), "New:", mask_n.sum())
