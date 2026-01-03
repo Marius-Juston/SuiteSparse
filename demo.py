@@ -1,6 +1,6 @@
 from pprint import pprint
 
-import _amd
+from suitesparse_amd import amd
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # sym = a @ a.T + np.eye(n)
     print(sym)
 
-    P, info = _amd.amd(sym, verbose=True, aggressive=True, dense=10.0)
+    P, info = amd.amd(sym.tolist(), verbose=True, aggressive=True, dense=10.0)
 
     print(info)
 
