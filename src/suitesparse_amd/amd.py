@@ -4,7 +4,6 @@ import numbers
 from typing import Sequence, Tuple, List, TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    import numpy as np
     from numpy.typing import NDArray
 else:
     NDArray = Any
@@ -15,8 +14,7 @@ AMD_DEFAULT_DENSE = getattr(_c_ext, "AMD_DEFAULT_DENSE", 10.0)
 AMD_DEFAULT_AGGRESSIVE = bool(getattr(_c_ext, "AMD_DEFAULT_AGGRESSIVE", 1))
 
 
-# TODO improve the docstring
-def amd(matrix: NDArray[np.floating] | Sequence[Sequence[numbers.Real]],
+def amd(matrix: NDArray[Any] | Sequence[Sequence[numbers.Real]],
         *
         ,
         dense: float = AMD_DEFAULT_DENSE,
@@ -24,157 +22,145 @@ def amd(matrix: NDArray[np.floating] | Sequence[Sequence[numbers.Real]],
         verbose: bool = False
         ) -> Tuple[List[int], List[float]]:
     """
- AMD finds a symmetric ordering P of a matrix A so that the Cholesky
- factorization of P*A*P' has fewer nonzeros and takes less work than the
- Cholesky factorization of A.  If A is not symmetric, then it performs its
- ordering on the matrix A+A'.  Two sets of user-callable routines are
- provided, one for int32_t integers and the other for int64_t integers.
+    Compute an Approximate Minimum Degree (AMD) symmetric ordering.
 
- The method is based on the approximate minimum degree algorithm, discussed
- in Amestoy, Davis, and Duff, "An approximate degree ordering algorithm",
- SIAM Journal of Matrix Analysis and Applications, vol. 17, no. 4, pp.
- 886-905, 1996.  This package can perform both the AMD ordering (with
- aggressive absorption), and the AMDBAR ordering (without aggressive
- absorption) discussed in the above paper.  This package differs from the
- Fortran codes discussed in the paper:
-       (1) it can ignore "dense" rows and columns, leading to faster run times
-       (2) it computes the ordering of A+A' if A is not symmetric
-       (3) it is followed by a depth-first post-ordering of the assembly tree
-           (or supernodal elimination tree)
+    This function computes a permutation :math:`P` such that the Cholesky
+    factorization of the symmetrically permuted matrix
 
-     Output arguments:
+    .. math::
+        P A P^T
 
-      :P an int32_t/int64_t array of size n, containing the output
-          permutation. If row i is the kth pivot row, then P [k] = i.  In
-          MATLAB notation, the reordered matrix is A (P,P).
-      Info: a double array of size AMD_INFO, containing statistical
-          information.  Ignored if Info is NULL.
+    has reduced fill-in and arithmetic complexity compared to the
+    factorization of :math:`A`. If the input matrix is not symmetric,
+    the ordering is computed on the sparsity pattern of :math:`A + A^T`.
 
- On input, the matrix A is stored in column-oriented form.  The row indices
- of nonzero entries in column j are stored in Ai [Ap [j] ... Ap [j+1]-1].
+    The algorithm is based on the Approximate Minimum Degree method of
+    Amestoy, Davis, and Duff (1996), and supports both:
 
- If the row indices appear in ascending order in each column, and there
- are no duplicate entries, then amd_order is slightly more efficient in
- terms of time and memory usage.  If this condition does not hold, a copy
- of the matrix is created (where these conditions do hold), and the copy is
- ordered.
- 
- Row indices must be in the range 0 to
- n-1.  Ap [0] must be zero, and thus nz = Ap [n] is the number of nonzeros
- in A.  The array Ap is of size n+1, and the array Ai is of size nz = Ap [n].
- The matrix does not need to be symmetric, and the diagonal does not need to
- be present (if diagonal entries are present, they are ignored except for
- the output statistic Info [AMD_NZDIAG]).  The arrays Ai and Ap are not
- modified.  This form of the Ap and Ai arrays to represent the nonzero
- pattern of the matrix A is the same as that used internally by MATLAB.
- If you wish to use a more flexible input structure, please see the
- umfpack_*_triplet_to_col routines in the UMFPACK package, at
- http://www.suitesparse.com.
+    * **AMD** ordering (with aggressive absorption), and
+    * **AMDBAR** ordering (without aggressive absorption).
 
- AMD returns:
+    Compared to the original Fortran implementations, this implementation:
 
-      AMD_OK if the matrix is valid and sufficient memory can be allocated to
-          perform the ordering.
+    1. Detects and ignores dense rows/columns to improve runtime.
+    2. Automatically symmetrizes the pattern for nonsymmetric matrices.
+    3. Applies a depth-first postordering of the elimination (assembly) tree.
 
-      AMD_OUT_OF_MEMORY if not enough memory can be allocated.
+    Parameters
+    ----------
+    matrix : ndarray or sequence of sequences of real
+        Input matrix :math:`A`. Only the sparsity pattern is used.
+        The matrix may be symmetric or nonsymmetric. Diagonal entries,
+        if present, are ignored for ordering purposes.
+        Internally, the matrix is treated in compressed sparse column (CSC)
+        form; if the input does not satisfy sorted indices or contains
+        duplicates, a cleaned copy is constructed.
 
-      AMD_INVALID if the input arguments n, Ap, Ai are invalid, or if P is
-          NULL.
+    dense : float, default=AMD_DEFAULT_DENSE
+        Threshold controlling the treatment of *dense* rows/columns.
+        A row/column of :math:`A + A^T` with more than
 
-      AMD_OK_BUT_JUMBLED if the matrix had unsorted columns, and/or duplicate
-          entries, but was otherwise valid.
+        .. math::
+            \text{dense} \cdot \sqrt{n}
 
- The AMD routine first forms the pattern of the matrix A+A', and then
- computes a fill-reducing ordering, P.  If P [k] = i, then row/column i of
- the original is the kth pivotal row.
+        off-diagonal entries is considered dense, removed prior to ordering,
+        and placed last in the permutation.
+        If `dense < 0`, no rows/columns are treated as dense.
+        Rows/columns with 16 or fewer off-diagonal entries are never
+        considered dense.
 
- The Control array is used to set various parameters for AMD.  If a NULL
- pointer is passed, default values are used.  The Control array is not
- modified.
+    aggressive : bool, default=AMD_DEFAULT_AGGRESSIVE
+        If ``True``, enables *aggressive absorption*, in which an element
+        is absorbed into the current element if its adjacency pattern
+        is a subset of the current one, even if it is not adjacent to
+        the pivot. This generally improves degree estimates and reduces
+        runtime and fill-in, but may occasionally yield a slightly worse
+        ordering. Setting this to ``False`` yields the AMDBAR variant.
 
-      Control [AMD_DENSE]:  controls the threshold for "dense" rows/columns.
-          A dense row/column in A+A' can cause AMD to spend a lot of time in
-          ordering the matrix.  If Control [AMD_DENSE] >= 0, rows/columns
-          with more than Control [AMD_DENSE] sqrt (n) entries are ignored
-          during the ordering, and placed last in the output order.  The
-          default value of Control [AMD_DENSE] is 10.  If negative, no
-          rows/columns are treated as "dense".  Rows/columns with 16 or
-          fewer off-diagonal entries are never considered "dense".
+    verbose : bool, default=False
+        If ``True``, diagnostic information may be printed during execution.
 
-      Control [AMD_AGGRESSIVE]: controls whether or not to use aggressive
-          absorption, in which a prior element is absorbed into the current
-          element if is a subset of the current element, even if it is not
-          adjacent to the current pivot element (refer to Amestoy, Davis,
-          & Duff, 1996, for more details).  The default value is nonzero,
-          which means to perform aggressive absorption.  This nearly always
-          leads to a better ordering (because the approximate degrees are
-          more accurate) and a lower execution time.  There are cases where
-          it can lead to a slightly worse ordering, however.  To turn it off,
-          set Control [AMD_AGGRESSIVE] to 0.
+    Returns
+    -------
+    P : list[int]
+        Permutation vector of length ``n``. If ``P[k] = i``, then row/column
+        ``i`` of the original matrix is the ``k``-th pivot.
 
- The Info array provides statistics about the ordering on output.  If it is
- not present, the statistics are not returned.  This is not an error
- condition.
- 
-      Info [AMD_STATUS]:  the return value of AMD, either AMD_OK,
-          AMD_OK_BUT_JUMBLED, AMD_OUT_OF_MEMORY, or AMD_INVALID.
+    info : list[float]
+        Array of statistical information describing the ordering. The
+        entries follow the AMD convention and include:
 
-      Info [AMD_N]: n, the size of the input matrix
+        * ``info[AMD_STATUS]`` :
+          Status code (``AMD_OK``, ``AMD_OK_BUT_JUMBLED``,
+          ``AMD_OUT_OF_MEMORY``, or ``AMD_INVALID``).
+        * ``info[AMD_N]`` :
+          Matrix dimension ``n``.
+        * ``info[AMD_NZ]`` :
+          Number of nonzeros in the input matrix.
+        * ``info[AMD_SYMMETRY]`` :
+          Symmetry measure of the sparsity pattern.
+        * ``info[AMD_NZDIAG]`` :
+          Number of diagonal entries.
+        * ``info[AMD_NZ_A_PLUS_AT]`` :
+          Number of off-diagonal nonzeros in :math:`A + A^T`.
+        * ``info[AMD_NDENSE]`` :
+          Number of dense rows/columns removed.
+        * ``info[AMD_MEMORY]`` :
+          Estimated memory usage (bytes).
+        * ``info[AMD_NCMPA]`` :
+          Number of garbage collections.
+        * ``info[AMD_LNZ]`` :
+          Estimated number of nonzeros in the Cholesky factor ``L``
+          (excluding the diagonal).
+        * ``info[AMD_NDIV]`` :
+          Estimated number of divisions in a subsequent LDLᵀ factorization.
+        * ``info[AMD_NMULTSUBS_LDL]`` :
+          Estimated multiply–subtract pairs for LDLᵀ.
+        * ``info[AMD_NMULTSUBS_LU]`` :
+          Estimated multiply–subtract pairs for LU (no pivoting).
+        * ``info[AMD_DMAX]`` :
+          Maximum column count in ``L`` (including diagonal).
 
-      Info [AMD_NZ]: the number of nonzeros in A, nz = Ap [n]
+        Remaining entries are reserved for future use.
 
-      Info [AMD_SYMMETRY]:  the symmetry of the matrix A.  It is the number
-          of "matched" off-diagonal entries divided by the total number of
-          off-diagonal entries.  An entry A(i,j) is matched if A(j,i) is also
-          an entry, for any pair (i,j) for which i != j.  In MATLAB notation,
-              S = spones (A) ;
-              B = tril (S, -1) + triu (S, 1) ;
-              symmetry = nnz (B & B') / nnz (B) ;
+    Notes
+    -----
+    The ordering is computed purely from the sparsity pattern and is suitable
+    for sparse Cholesky, :math:`LDL^T`, or LU factorizations without numerical
+    pivoting. The reported fill and operation counts are *upper bounds*,
+    and may be loose when many dense rows/columns are present or when
+    mass elimination occurs.
 
-      Info [AMD_NZDIAG]: the number of entries on the diagonal of A.
+    References
+    ----------
+    Amestoy, P. R., Davis, T. A., & Duff, I. S. (1996).
+    *An approximate degree ordering algorithm*.
+    SIAM Journal on Matrix Analysis and Applications, 17(4), 886–905.
 
-      Info [AMD_NZ_A_PLUS_AT]:  the number of nonzeros in A+A', excluding the
-          diagonal.  If A is perfectly symmetric (Info [AMD_SYMMETRY] = 1)
-          with a fully nonzero diagonal, then Info [AMD_NZ_A_PLUS_AT] = nz-n
-          (the smallest possible value).  If A is perfectly unsymmetric
-          (Info [AMD_SYMMETRY] = 0, for an upper triangular matrix, for
-          example) with no diagonal, then Info [AMD_NZ_A_PLUS_AT] = 2*nz
-          (the largest possible value).
- 
-      Info [AMD_NDENSE]: the number of "dense" rows/columns of A+A' that were
-          removed from A prior to ordering.  These are placed last in the
-          output order P.
- 
-      Info [AMD_MEMORY]: the amount of memory used by AMD, in bytes.  In the
-          current version, this is 1.2 Info  [AMD_NZ_A_PLUS_AT] + 9*n
-          times the size of an integer.  This is at most 2.4nz + 9n.  This
-          excludes the size of the input arguments Ai, Ap, and P, which have
-          a total size of nz + 2*n + 1 integers.
-
-      Info [AMD_NCMPA]: the number of garbage collections performed.
-
-      Info [AMD_LNZ]: the number of nonzeros in L (excluding the diagonal).
-          This is a slight upper bound because mass elimination is combined
-          with the approximate degree update.  It is a rough upper bound if
-          there are many "dense" rows/columns.  The rest of the statistics,
-          below, are also slight or rough upper bounds, for the same reasons.
-          The post-ordering of the assembly tree might also not exactly
-          correspond to a true elimination tree postordering.
- 
-      Info [AMD_NDIV]: the number of divide operations for a subsequent LDL'
-          or LU factorization of the permuted matrix A (P,P).
-
-      Info [AMD_NMULTSUBS_LDL]:  the number of multiply-subtract pairs for a
-          subsequent LDL' factorization of A (P,P).
-
-      Info [AMD_NMULTSUBS_LU]:  the number of multiply-subtract pairs for a
-          subsequent LU factorization of A (P,P), assuming that no numerical
-          pivoting is required.
-
-      Info [AMD_DMAX]:  the maximum number of nonzeros in any column of L,
-          including the diagonal.
-
-      Info [14..19] are not used in the current version, but may be used in
-          future versions.
+    Examples
+    --------
+    >>> import numpy as np
+    >>> def sparse_dense(n, density=0.15, seed=42):
+    >>>     np.random.seed(seed)
+    >>>     mask = np.abs(np.random.randn(n, n)) < density
+    >>>     mask = np.triu(mask)
+    >>>     sym_mask = mask + mask.T
+    >>>     sym_mask = sym_mask.astype(np.int32)
+    >>>     sym_mask -= np.diag(np.diag(sym_mask))
+    >>>     sym_mask += np.diag(sym_mask.sum(axis=0) + 1)
+    >>>
+    >>>     return sym_mask
+    >>>
+    >>> n = 100
+    >>> A = sparse_dense(n)               # Generate sparse matrix
+    >>>
+    >>> from suitesparse_amd import amd
+    >>> P, info = amd.amd(A)              # Compute the AMD
+    >>>
+    >>> full_P = np.zeros((n, n))
+    >>> full_P[np.arange(n), P] = 1       # Dense Permutation matrix
+    >>>
+    >>> ordered_A = full_P @ A @ full_P.T # Ordered A matrx
     """
+
     return _c_ext.amd(matrix, dense, aggressive, verbose)
