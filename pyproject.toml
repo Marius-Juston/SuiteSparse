@@ -48,6 +48,3 @@ push = false
 "setup.py" = [
     'version="{version}",$',
 ]
-"src/suitesparse_amd/__init__.py" = [
-    '^__version__ = "{version}"$',
-]
