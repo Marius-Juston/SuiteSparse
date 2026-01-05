@@ -5,13 +5,6 @@ from unittest import skipIf
 from suitesparse_amd.amd import amd
 
 try:
-    import torch
-
-    HAS_PYTORCH = True
-except ImportError:
-    HAS_PYTORCH = False
-
-try:
     import numpy as np
 
     HAS_NUMPY = True
@@ -24,7 +17,7 @@ class TestList(unittest.TestCase):
         matrix = None
 
         with self.assertRaises(TypeError):
-            val = amd(matrix)
+            amd(matrix)
 
     def test_one_d_empty(self):
         matrix = []
@@ -39,13 +32,13 @@ class TestList(unittest.TestCase):
         matrix = [0]
 
         with self.assertRaises(TypeError):
-            p, v = amd(matrix)
+            amd(matrix)
 
     def test_two_d_empty(self):
         matrix = [[]]
 
         with self.assertRaises(TypeError):
-            p, v = amd(matrix)
+            amd(matrix)
 
     def test_two_d_non_list(self):
         matrix = [0, [0]]
@@ -163,19 +156,19 @@ class TestNumpy(unittest.TestCase):
         matrix = np.array([])
 
         with self.assertRaises(ValueError):
-            p, v = amd(matrix)
+            amd(matrix)
 
     def test_one_d_full(self):
         matrix = np.array([0])
 
         with self.assertRaises(ValueError):
-            p, v = amd(matrix)
+            amd(matrix)
 
     def test_two_d_empty(self):
         matrix = np.array([[]])
 
         with self.assertRaises(ValueError):
-            p, v = amd(matrix)
+            amd(matrix)
 
     def test_two_d_square_not_number(self):
         matrix = np.array([[0, 0], [0, 's']])
