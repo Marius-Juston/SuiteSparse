@@ -55,7 +55,7 @@ class TestList(unittest.TestCase):
     def test_two_d_square_not_number(self):
         matrix = [[0, 0], [0, 's']]
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [0, 1])
 
@@ -66,21 +66,21 @@ class TestList(unittest.TestCase):
                   ['f', '', '', 'laugh']]
 
         with self.assertWarns(RuntimeWarning):
-            p, info = amd(matrix, dense_permutation=False)
+            p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [3, 2, 1, 0])
 
     def test_two_d_square_identity_dense(self):
         matrix = [[1, 0], [0, 1]]
 
-        p, info = amd(matrix, dense_permutation=True)
+        p, _ = amd(matrix, dense_permutation=True)
 
         self.assertEqual(matrix, p)
 
     def test_two_d_square_identity(self):
         matrix = [[1, 0], [0, 1]]
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [0, 1])
 
@@ -90,7 +90,7 @@ class TestList(unittest.TestCase):
                   [1, 0, 1, 0],
                   [1, 0, 0, 1]]
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [3, 2, 1, 0])
 
@@ -100,7 +100,7 @@ class TestList(unittest.TestCase):
                   [0, 0, 1, 0],
                   [1, 0, 0, 1]]
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [1, 2, 0, 3])
 
@@ -110,7 +110,7 @@ class TestList(unittest.TestCase):
                   [0, 1, 1, 0],
                   [1, 0, 0, 1]]
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [1, 2, 0, 3])
 
@@ -120,7 +120,7 @@ class TestList(unittest.TestCase):
                   [1, 1, 1, 1],
                   [0, 0, 1, 1]]
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [3, 0, 1, 2])
 
@@ -145,7 +145,7 @@ class TestList(unittest.TestCase):
 
                 matrix[data[0]][data[1]] = data[2]
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, expected_p)
 
@@ -173,14 +173,14 @@ class TestNumpy(unittest.TestCase):
     def test_two_d_square_not_number(self):
         matrix = np.array([[0, 0], [0, 's']])
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [0, 1])
 
     def test_two_d_square_identity_dense(self):
         matrix = np.eye(10)
 
-        p, info = amd(matrix, dense_permutation=True)
+        p, _ = amd(matrix, dense_permutation=True)
 
         self.assertTrue(np.allclose(matrix, p))
 
@@ -209,14 +209,14 @@ class TestNumpy(unittest.TestCase):
         for dtype in datatypes:
             matrix = np.eye(10, dtype=dtype)
 
-            p, info = amd(matrix, dense_permutation=True)
+            p, _ = amd(matrix, dense_permutation=True)
 
             self.assertTrue(np.allclose(matrix, p), f"Failed to handle numpy array of type: {dtype}")
 
     def test_two_d_square_identity(self):
         matrix = np.array([[1, 0], [0, 1]])
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [0, 1])
 
@@ -226,7 +226,7 @@ class TestNumpy(unittest.TestCase):
                            [1, 0, 1, 0],
                            [1, 0, 0, 1]])
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [3, 2, 1, 0])
 
@@ -236,7 +236,7 @@ class TestNumpy(unittest.TestCase):
                            [0, 0, 1, 0],
                            [1, 0, 0, 1]])
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [1, 2, 0, 3])
 
@@ -246,7 +246,7 @@ class TestNumpy(unittest.TestCase):
                            [0, 1, 1, 0],
                            [1, 0, 0, 1]])
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [1, 2, 0, 3])
 
@@ -256,7 +256,7 @@ class TestNumpy(unittest.TestCase):
                            [1, 1, 1, 1],
                            [0, 0, 1, 1]])
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, [3, 0, 1, 2])
 
@@ -283,7 +283,7 @@ class TestNumpy(unittest.TestCase):
 
         matrix = np.array(matrix)
 
-        p, info = amd(matrix, dense_permutation=False)
+        p, _ = amd(matrix, dense_permutation=False)
 
         self.assertEqual(p, expected_p)
 
