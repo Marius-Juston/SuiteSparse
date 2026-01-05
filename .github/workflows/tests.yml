@@ -40,7 +40,7 @@ jobs:
         if: ${{ always() }}
       - name: Install numpy
         run: |
-          pip install umpy
+          pip install numpy
       - name: Test with pytest with numpy
         run: pytest tests --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}-numpy.xml
       - name: Upload pytest test results with numpy
