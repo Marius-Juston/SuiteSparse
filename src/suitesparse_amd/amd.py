@@ -1,26 +1,42 @@
-from __future__ import annotations
-
 import numbers
 from typing import Sequence, Tuple, List, TYPE_CHECKING, Any
 
+try:
+    import torch
+
+    HAS_PYTORCH = True
+except ImportError:
+    HAS_PYTORCH = False
+
+try:
+    import numpy as np
+
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
+
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+    from torch import Tensor
 else:
     NDArray = Any
+    Tensor = Any
 
 from . import _amd as _c_ext
 
 AMD_DEFAULT_DENSE = getattr(_c_ext, "AMD_DEFAULT_DENSE", 10.0)
 AMD_DEFAULT_AGGRESSIVE = bool(getattr(_c_ext, "AMD_DEFAULT_AGGRESSIVE", 1))
+AMD_INFO = getattr(_c_ext, "AMD_INFO", 20)
 
 
-def amd(matrix: NDArray[Any] | Sequence[Sequence[numbers.Real]],
+def amd(matrix: NDArray[Any] | Tensor | Sequence[Sequence[numbers.Real]],
         *
         ,
         dense: float = AMD_DEFAULT_DENSE,
         aggressive: bool = AMD_DEFAULT_AGGRESSIVE,
-        verbose: bool = False
-        ) -> Tuple[List[int], List[float]]:
+        verbose: bool = False,
+        dense_permutation: bool = True
+        ) -> Tuple[Any, List[float]]:
     """
     Compute an Approximate Minimum Degree (AMD) symmetric ordering.
 
@@ -61,7 +77,7 @@ def amd(matrix: NDArray[Any] | Sequence[Sequence[numbers.Real]],
         A row/column of :math:`A + A^T` with more than
 
         .. math::
-            \text{dense} \cdot \sqrt{n}
+            \\text{dense} \\cdot \\sqrt{n}
 
         off-diagonal entries is considered dense, removed prior to ordering,
         and placed last in the permutation.
@@ -123,6 +139,9 @@ def amd(matrix: NDArray[Any] | Sequence[Sequence[numbers.Real]],
 
         Remaining entries are reserved for future use.
 
+    dense_permutation : bool
+        returns the dense representation of the permutation matrix
+
     Notes
     -----
     The ordering is computed purely from the sparsity pattern and is suitable
@@ -163,4 +182,31 @@ def amd(matrix: NDArray[Any] | Sequence[Sequence[numbers.Real]],
     >>> ordered_A = full_P @ A @ full_P.T # Ordered A matrx
     """
 
-    return _c_ext.amd(matrix, dense, aggressive, verbose)
+    is_torch = HAS_PYTORCH and isinstance(matrix, torch.Tensor)
+
+    if is_torch:
+        device = matrix.device
+        dtype = matrix.dtype
+        matrix_ = matrix.detach().cpu().numpy()
+    else:
+        matrix_ = matrix
+
+    P, info = _c_ext.amd(matrix_, dense, aggressive, verbose)
+
+    if dense_permutation:
+        n = int(info[1])
+
+        is_numpy = HAS_NUMPY and isinstance(matrix, np.ndarray)
+
+        if is_torch:
+            P_out = torch.zeros((n, n), dtype=dtype, device=device)
+            P_out[torch.arange(n), P] = 1
+        elif is_numpy:
+            P_out = np.zeros((n, n))
+            P_out[np.arange(n), P] = 1
+        else:
+            P_out = [[int(P[j] == i) for i in range(n)] for j in range(n)]
+
+        P = P_out
+
+    return P, info
