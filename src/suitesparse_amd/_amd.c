@@ -273,13 +273,14 @@ static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, 
 
         if (!PyList_Check(py_inner_list)) {
             PyErr_SetString(PyExc_TypeError, "list must contain only lists");
-            return NULL;
+            goto fail;
         }
 
         const Py_ssize_t cols = PyList_Size(py_inner_list);
 
         if (rows != cols) {
             PyErr_SetString(PyExc_TypeError, "lists must have the same length, to be a square matrix");
+            goto fail;
         }
 
         for (Py_ssize_t j = 0; j < cols; ++j) {
@@ -443,7 +444,7 @@ loop_exit:
     return out;
 
 fail:
-    Py_RETURN_NONE;
+    return NULL;
 }
 
 static PyObject *_sparse_system(PyObject *self, PyObject *args, PyObject *kwargs) {
