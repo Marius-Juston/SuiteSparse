@@ -11,7 +11,11 @@ permissions:
 # Gives annoying duplicate code flags, ignoring for now
 env:
   LINTER_RULES_PATH: .
+  ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true
 
+  VALIDATE_CLANG_FORMAT: true
+  VALIDATE_BIOME_FORMAT: true
+  VALIDATE_BIOME_LINT: true
 jobs:
   lint:
     # Super-linter workflow running in check only mode
@@ -56,6 +60,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Set your fix mode variables to true
+          FIX_BIOME_FORMAT: true
+          FIX_BIOME_LINT: true
+
           FIX_JSON: true
           FIX_JSON_PRETTIER: true
           FIX_SHELL_SHFMT: true
