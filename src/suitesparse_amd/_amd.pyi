@@ -29,7 +29,7 @@ def amd(
 
 @overload
 def amd(
-        matrix: NDArray[Any],
+        matrix: NDArray,
         *,
         dense: float = ...,
         aggressive: bool = ...,
@@ -60,13 +60,13 @@ def amd(matrix: _ArrayType,
 
 
 @overload
-def amd(matrix: NDArray[Any],
+def amd(matrix: NDArray,
         *,
         dense: float = ...,
         aggressive: bool = ...,
         verbose: bool = ...,
         dense_permutation: Literal[True] = True,
-        ) -> Tuple[NDArray[Any], List[float]]: ...
+        ) -> Tuple[NDArray, List[float]]: ...
 
 
 @overload

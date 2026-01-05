@@ -29,7 +29,7 @@ AMD_DEFAULT_AGGRESSIVE = bool(getattr(_c_ext, "AMD_DEFAULT_AGGRESSIVE", 1))
 AMD_INFO = getattr(_c_ext, "AMD_INFO", 20)
 
 
-def amd(matrix: NDArray[Any] | Tensor | Sequence[Sequence[numbers.Real]],
+def amd(matrix: NDArray | Tensor | Sequence[Sequence[numbers.Real]],
         *
         ,
         dense: float = AMD_DEFAULT_DENSE,
