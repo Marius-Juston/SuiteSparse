@@ -1,9 +1,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-
 #include <math.h>
-
-#include "amd.h"
+#include <amd.h>
 
 
 static inline int
@@ -320,7 +318,7 @@ cleanup:
 }
 
 static inline PyObject *
-_list_array(PyObject *obj, int verbose, int aggressive, double dense)
+_list_array(PyObject *obj, const int verbose, const int aggressive, const double dense)
 {
     PyObject *out = NULL;
 
