@@ -62,8 +62,9 @@ class TestList(unittest.TestCase):
     def test_two_d_square_not_number(self):
         matrix = [[0, 0], [0, 's']]
 
-        with self.assertRaises(TypeError):
-            amd(matrix)
+        p, info = amd(matrix, dense_permutation=False)
+
+        self.assertEqual(p, [0, 1])
 
     def test_two_d_square_identity_dense(self):
         matrix = [[1, 0], [0, 1]]
@@ -168,8 +169,9 @@ class TestNumpy(unittest.TestCase):
     def test_two_d_square_not_number(self):
         matrix = np.array([[0, 0], [0, 's']])
 
-        with self.assertRaises(ValueError):
-            amd(matrix)
+        p, info = amd(matrix, dense_permutation=False)
+
+        self.assertEqual(p, [0, 1])
 
     def test_two_d_square_identity_dense(self):
         matrix = np.eye(10)
@@ -177,6 +179,35 @@ class TestNumpy(unittest.TestCase):
         p, info = amd(matrix, dense_permutation=True)
 
         self.assertTrue(np.allclose(matrix, p))
+
+    def test_two_d_square_datatypes(self):
+        datatypes = [
+            np.bool,
+            np.int8,
+            np.uint8,
+            np.int16,
+            np.uint16,
+            np.int32,
+            np.uint32,
+            np.intp,
+            np.uintp,
+            np.int64,
+            np.uint64,
+            np.float16,
+            np.float32,
+            np.float64,
+            np.float128,
+            np.complex64,
+            np.complex128,
+            np.complex256
+        ]
+
+        for dtype in datatypes:
+            matrix = np.eye(10, dtype=dtype)
+
+            p, info = amd(matrix, dense_permutation=True)
+
+            self.assertTrue(np.allclose(matrix, p), f"Failed to handle numpy array of type: {dtype}")
 
     def test_two_d_square_identity(self):
         matrix = np.array([[1, 0], [0, 1]])
