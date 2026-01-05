@@ -2,7 +2,7 @@ name: Python Testing package
 permissions:
   contents: read
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
 
     steps:
       - uses: actions/checkout@v5
@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest numpy
+          pip install pytest
       - name: Install package
         run: |
           python -m pip install .
@@ -36,5 +36,17 @@ jobs:
         with:
           name: pytest-results-${{ matrix.python-version }}
           path: junit/test-results-${{ matrix.python-version }}.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
+      - name: Install numpy
+        run: |
+          pip install umpy
+      - name: Test with pytest with numpy
+        run: pytest tests --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}-numpy.xml
+      - name: Upload pytest test results with numpy
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results-${{ matrix.python-version }}-numpy.xml
+          path: junit/test-results-${{ matrix.python-version }}-numpy.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
