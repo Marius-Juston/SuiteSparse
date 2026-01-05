@@ -11,7 +11,6 @@ include_directories(cpython/Include)
 
 add_executable(SuiteSparse
         src/suitesparse_amd/_amd.c
-        _amd.c
         SuiteSparse/AMD/Include/amd.h
         SuiteSparse/AMD/Include/amd_internal.h
         SuiteSparse/AMD/Source/amd_1.c
