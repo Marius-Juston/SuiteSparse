@@ -41,7 +41,7 @@ References
 import numbers
 from typing import Sequence, Tuple, List, TYPE_CHECKING, Any, Union
 
-from . import _amd as _c_ext # pylint: disable=no-name-module
+from . import _amd as _c_ext # pylint: disable=no-name-in-module
 
 try:
     import torch
