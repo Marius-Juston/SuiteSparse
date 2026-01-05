@@ -66,6 +66,17 @@ class TestList(unittest.TestCase):
 
         self.assertEqual(p, [0, 1])
 
+    def test_two_d_square_simple_string(self):
+        matrix = [['a', 'bc', 'd', 'e'],
+                  ['ff', 'gg', '', ''],
+                  ['qq', '', 'q', ''],
+                  ['f', '', '', 'laugh']]
+
+        with self.assertWarns(RuntimeWarning):
+            p, info = amd(matrix, dense_permutation=False)
+
+        self.assertEqual(p, [3, 2, 1, 0])
+
     def test_two_d_square_identity_dense(self):
         matrix = [[1, 0], [0, 1]]
 
