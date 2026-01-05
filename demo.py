@@ -20,14 +20,14 @@ def sparse_dense(n, density=0.15, seed=42):
     return sym_mask
 
 
-if __name__ == '__main__':
-    n = 100
+def main():
+    N = 100
 
     # a = np.eye(n)
     # a[-1][0] = 1
     # a[0][-1] = 1
     # a[0, 0] = 2
-    a = sparse_dense(n)
+    a = sparse_dense(N)
 
     print(a)
 
@@ -40,9 +40,9 @@ if __name__ == '__main__':
     print(info)
 
     print(P)
-    full_P = np.zeros((n, n))
+    full_P = np.zeros((N, N))
 
-    full_P[np.arange(n), P] = 1
+    full_P[np.arange(N), P] = 1
 
     print(full_P)
 
@@ -74,3 +74,7 @@ if __name__ == '__main__':
 
     print("Number of zeros:")
     print("Previous: ", mask.sum(), "New:", mask_n.sum())
+
+
+if __name__ == '__main__':
+    main()
