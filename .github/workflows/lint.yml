@@ -11,7 +11,7 @@ permissions:
 # Gives annoying duplicate code flags, ignoring for now
 env:
   DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-  #  VALIDATE_JSCPD: false
+  VALIDATE_JSCPD: false
   VALIDATE_GIT_COMMITLINT: false
   JSCPD_CONFIG_FILE: .jscpd.json
   PYTHON_MYPY_CONFIG_FILE: .mypy.ini
@@ -75,6 +75,8 @@ jobs:
           FIX_PYTHON_ISORT: true
           FIX_PYTHON_RUFF: true
           FIX_PYTHON_RUFF_FORMAT: true
+
+          VALIDATE_YAML_PRETTIER: true
           # To reuse the same Super-linter configuration that you use in the
           # lint job without duplicating it, see
           # https://github.com/super-linter/super-linter/blob/main/docs/run-linter-locally.md#share-environment-variables-between-environments
