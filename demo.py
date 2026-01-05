@@ -1,11 +1,23 @@
+"""
+Demo code for the AMD
+"""
+
 from pprint import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from suitesparse_amd import amd
 
 
 def sparse_dense(n, density=0.15, seed=42):
+    """
+    Generates a random sparse matrix with a specific density
+    :param n: the matrix dimension
+    :param density: the desired density
+    :param seed: the random seed
+    :return: the sparse dense matrix
+    """
     np.random.seed(seed)
     mask = np.abs(np.random.randn(n, n)) < density
     mask = np.triu(mask)
@@ -21,13 +33,12 @@ def sparse_dense(n, density=0.15, seed=42):
 
 
 def main():
-    N = 100
+    """
+    Main demo entry point
+    """
+    n = 100
 
-    # a = np.eye(n)
-    # a[-1][0] = 1
-    # a[0][-1] = 1
-    # a[0, 0] = 2
-    a = sparse_dense(N)
+    a = sparse_dense(n)
 
     print(a)
 
@@ -35,38 +46,38 @@ def main():
     # sym = a @ a.T + np.eye(n)
     print(sym)
 
-    P, info = amd.amd(sym.tolist(), verbose=True, aggressive=True, dense=10.0)
+    permutation, info = amd.amd(sym.tolist(), verbose=True, aggressive=True, dense=10.0)
 
     print(info)
 
-    print(P)
-    full_P = np.zeros((N, N))
+    print(permutation)
+    full_permutation = np.zeros((n, n))
 
-    full_P[np.arange(N), P] = 1
+    full_permutation[np.arange(n), permutation] = 1
 
-    print(full_P)
+    print(full_permutation)
 
-    Lbase = np.linalg.cholesky(sym)
-    pprint(np.around(Lbase, 1))
+    l_base = np.linalg.cholesky(sym)
+    pprint(np.around(l_base, 1))
 
-    modified_sym = full_P @ sym @ full_P.T
+    modified_sym = full_permutation @ sym @ full_permutation.T
 
-    Lnew = np.linalg.cholesky(modified_sym)
+    l_new = np.linalg.cholesky(modified_sym)
 
-    pprint(np.around(Lnew, 1))
+    pprint(np.around(l_new, 1))
 
-    fig, axes = plt.subplots(2, 2, figsize=(5, 5))
+    _, axes = plt.subplots(2, 2, figsize=(5, 5))
 
     axes[0][0].set_title("Original")
     axes[0][0].imshow(sym)
     axes[0][1].set_title("Ordered")
     axes[0][1].imshow(modified_sym)
 
-    mask = Lbase == 0
-    mask_n = Lnew == 0
+    mask = l_base == 0
+    mask_n = l_new == 0
 
-    axes[1][0].imshow(Lbase != 0)
-    axes[1][1].imshow(Lnew != 0)
+    axes[1][0].imshow(l_base != 0)
+    axes[1][1].imshow(l_new != 0)
 
     plt.tight_layout()
 

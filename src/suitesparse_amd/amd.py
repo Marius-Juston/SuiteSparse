@@ -1,7 +1,47 @@
-from . import _amd as _c_ext
+# pylint: disable=duplicate-code
+
+"""
+SuiteSparse: Approximate Minimum Degree (AMD) Ordering
+======================================================
+
+This module provides a high-performance Python interface to the Approximate Minimum
+Degree (AMD) ordering algorithm, originally developed by Amestoy, Davis, and Duff.
+
+Mathematical Context
+--------------------
+The primary objective of this module is to solve the graph-theoretic problem of
+finding a symmetric permutation :math:`P` that minimizes "fill-in" during the factorization
+of a sparse matrix :math:`A`.
+
+Given a large, sparse, symmetric positive definite matrix :math:`A`, the Cholesky factor
+:math:`L` (where :math:`A = LL^T`) often suffers from fill-in, where entries that were zero in
+:math:`A` become non-zero in :math:`L`. Minimizing this fill-in is an NP-complete problem.
+The AMD algorithm provides a heuristic solution by selecting pivot nodes with the
+minimum degree in the elimination graph at each step.
+
+The computed permutation :math:`P` satisfies:
+.. math::
+   \\tilde{A} = P A P^T
+such that the factor :math:`\\tilde{L}` of :math:`\\tilde{A}` is
+significantly sparser than :math:`L`.
+
+Dependencies
+------------
+* `numpy` (Optional): Required for matrix operations involving arrays.
+    Algorithm falls back to list processing if absent.
+* `torch` (Optional): Required for GPU/Tensor-based workflows.
+
+References
+----------
+.. [1] Amestoy, P. R., Davis, T. A., & Duff, I. S. (1996). An approximate minimum
+       degree ordering algorithm. *SIAM Journal on Matrix Analysis and Applications*,
+       17(4), 886-905.
+"""
 
 import numbers
 from typing import Sequence, Tuple, List, TYPE_CHECKING, Any, Union
+
+from . import _amd as _c_ext
 
 try:
     import torch
@@ -23,7 +63,6 @@ if TYPE_CHECKING:
 else:
     NDArray = Any
     Tensor = Any
-
 
 AMD_DEFAULT_DENSE = getattr(_c_ext, "AMD_DEFAULT_DENSE", 10.0)
 AMD_DEFAULT_AGGRESSIVE = bool(getattr(_c_ext, "AMD_DEFAULT_AGGRESSIVE", 1))

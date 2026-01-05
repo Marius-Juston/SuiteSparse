@@ -8,6 +8,10 @@ on: # yamllint disable-line rule:truthy
 permissions:
   contents: read
 
+# Gives annoying copy flags, ignoring for now
+#env:
+#  VALIDATE_JSCPD: false
+
 jobs:
   lint:
     # Super-linter workflow running in check only mode
@@ -52,6 +56,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Set your fix mode variables to true
+          FIX_JSON: true
+          FIX_JSON_PRETTIER: true
           FIX_SHELL_SHFMT: true
           FIX_YAML_PRETTIER: true
           FIX_CLANG_FORMAT: true

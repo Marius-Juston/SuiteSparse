@@ -48,3 +48,6 @@ push = false
 "setup.py" = [
     'version="{version}",$',
 ]
+
+[tool.pylint.MAIN]
+extension-pkg-allow-list = ["suitesparse_amd._amd"]
