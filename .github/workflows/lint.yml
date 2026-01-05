@@ -56,7 +56,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Set your fix mode variables to true
-          FIX_BIOME_FORMAT: true
           FIX_BIOME_LINT: true
 
           FIX_JSON: true
