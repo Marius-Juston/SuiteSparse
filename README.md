@@ -4,33 +4,29 @@
 
 This package is the port of the SuiteSparse AMD (Approximate Minimum Degree) function. This is a Python C wrapper of the library from [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse).
 
-This package currently only works with Numpy arrays and 2D lists.
+This package currently only works with Numpy arrays, 2D lists and PyTorch Tensors in the CPU.
 
-## Future
+## Installation
 
-- Work with PyTorch CPU Tensors
-
-# Installation
-
-## PyPi
+### PyPi
 
 ```bash
 pip install suitesparse-amd
 ```
 
-## Source Installation
+### Source Installation
 
 ```bash
 pip install git+https://github.com/Marius-Juston/SuiteSparse.git
 ```
 
-## Compile Source
+### Compile Source
 
 ```bash
 python3 -m build --wheel --sdist
 ```
 
-# Publish
+## Publish
 
 ```bash
 bumpver update --tag-commit --patch --push

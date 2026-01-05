@@ -1,5 +1,5 @@
 import numbers
-from typing import Sequence, Tuple, List, TYPE_CHECKING, Any
+from typing import Sequence, Tuple, List, TYPE_CHECKING, Any, Union
 
 try:
     import torch
@@ -29,7 +29,7 @@ AMD_DEFAULT_AGGRESSIVE = bool(getattr(_c_ext, "AMD_DEFAULT_AGGRESSIVE", 1))
 AMD_INFO = getattr(_c_ext, "AMD_INFO", 20)
 
 
-def amd(matrix: NDArray | Tensor | Sequence[Sequence[numbers.Real]],
+def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
         *
         ,
         dense: float = AMD_DEFAULT_DENSE,
