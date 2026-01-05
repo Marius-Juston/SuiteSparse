@@ -1,3 +1,5 @@
+from . import _amd as _c_ext
+
 import numbers
 from typing import Sequence, Tuple, List, TYPE_CHECKING, Any, Union
 
@@ -22,7 +24,6 @@ else:
     NDArray = Any
     Tensor = Any
 
-from . import _amd as _c_ext
 
 AMD_DEFAULT_DENSE = getattr(_c_ext, "AMD_DEFAULT_DENSE", 10.0)
 AMD_DEFAULT_AGGRESSIVE = bool(getattr(_c_ext, "AMD_DEFAULT_AGGRESSIVE", 1))
@@ -191,7 +192,7 @@ def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
     else:
         matrix_ = matrix
 
-    P, info = _c_ext.amd(matrix_, dense, aggressive, verbose)
+    permutation, info = _c_ext.amd(matrix_, dense, aggressive, verbose)
 
     if dense_permutation:
         n = int(info[1])
@@ -199,14 +200,14 @@ def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
         is_numpy = HAS_NUMPY and isinstance(matrix, np.ndarray)
 
         if is_torch:
-            P_out = torch.zeros((n, n), dtype=dtype, device=device)
-            P_out[torch.arange(n), P] = 1
+            permutation_out = torch.zeros((n, n), dtype=dtype, device=device)
+            permutation_out[torch.arange(n), permutation] = 1
         elif is_numpy:
-            P_out = np.zeros((n, n))
-            P_out[np.arange(n), P] = 1
+            permutation_out = np.zeros((n, n))
+            permutation_out[np.arange(n), permutation] = 1
         else:
-            P_out = [[int(P[j] == i) for i in range(n)] for j in range(n)]
+            permutation_out = [[int(permutation[j] == i) for i in range(n)] for j in range(n)]
 
-        P = P_out
+        permutation = permutation_out
 
-    return P, info
+    return permutation, info
