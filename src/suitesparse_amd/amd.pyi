@@ -11,6 +11,9 @@ else:
 _ArrayType = Sequence[Sequence[numbers.Real]]
 _ArrayTypeInt = Sequence[Sequence[int]]
 
+HAS_PYTORCH: bool
+HAS_NUMPY: bool
+
 AMD_DEFAULT_DENSE: float
 AMD_DEFAULT_AGGRESSIVE: bool
 AMD_INFO: int
