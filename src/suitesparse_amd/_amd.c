@@ -6,36 +6,39 @@
 #include "amd.h"
 
 
-static inline int read_numeric(const Py_buffer *view, const char *ptr, double *out) {
-    if (strcmp(view->format, "f") == 0) {
-        *out = *(float *) ptr;
-    } else if (strcmp(view->format, "d") == 0) {
-        *out = *(double *) ptr;
-    } else if (strcmp(view->format, "b") == 0) {
-        *out = *(int8_t *) ptr;
-    } else if (strcmp(view->format, "B") == 0) {
-        *out = *(uint8_t *) ptr;
-    } else if (strcmp(view->format, "h") == 0) {
-        *out = *(int16_t *) ptr;
-    } else if (strcmp(view->format, "H") == 0) {
-        *out = *(uint16_t *) ptr;
-    } else if (strcmp(view->format, "i") == 0) {
-        *out = *(int32_t *) ptr;
-    } else if (strcmp(view->format, "I") == 0) {
-        *out = *(uint32_t *) ptr;
-    } else if (strcmp(view->format, "l") == 0) {
-        *out = *(long *) ptr;
-    } else if (strcmp(view->format, "q") == 0) {
-        *out = *(int64_t *) ptr;
-    } else if (strcmp(view->format, "?") == 0) {
-        *out = *(char *) ptr;
-    } else {
-        PyErr_Format(PyExc_TypeError, "Unsupported buffer format '%s' is unrecognized", view->format);
+static inline int is_nonzero_finite(const Py_buffer *view, const char *ptr) {
+    // Check format type, handling for NULL
+    const char *fmt = view->format ? view->format : "B";
+    const char type = strchr("@<>!=", fmt[0]) && fmt[1] ? fmt[1] : fmt[0];
 
-        return 0;
+    if (type == 'f') {
+        float v;
+        memcpy(&v, ptr, sizeof(v));
+
+        if (!isfinite(v)) {
+            return -1;
+        }
+
+        return v != 0.0f;
+    }
+    if (type == 'd') {
+        double v;
+        memcpy(&v, ptr, sizeof(v));
+
+        if (!isfinite(v)) {
+            return -1;
+        }
+
+        return v != 0.0;
     }
 
-    return isfinite(*out);
+    // Handles all integer types, all integers have all-zero bytes
+    const char *end = ptr + view->itemsize;
+    while (ptr < end) {
+        if (*ptr++) return 1;
+    }
+
+    return 0;
 }
 
 static inline int copy_array(const int32_t *array, const size_t size, PyObject *list) {
@@ -90,7 +93,6 @@ static inline PyObject *_numpy_array(PyObject *obj, int verbose, int aggressive,
 
     const char *data = view.buf;
     int32_t count = 0;
-    double value;
 
     int32_t *Ap = PyMem_Calloc(rows + 1, sizeof(int32_t));
     if (!Ap) {
@@ -104,12 +106,14 @@ static inline PyObject *_numpy_array(PyObject *obj, int verbose, int aggressive,
             const char *ptr = data + i * view.strides[0]
                               + j * view.strides[1];
 
-            if (!read_numeric(&view, ptr, &value)) {
+            const int nonzero_flag = is_nonzero_finite(&view, ptr);
+
+            if (nonzero_flag == -1) {
                 PyErr_SetString(PyExc_ValueError, "Unsupported dtype or NaN/Inf encountered");
                 goto fail;
             }
 
-            if (value != 0) {
+            if (nonzero_flag) {
                 ++count;
             }
         }
@@ -130,12 +134,14 @@ static inline PyObject *_numpy_array(PyObject *obj, int verbose, int aggressive,
             const char *ptr = data + i * view.strides[0]
                               + j * view.strides[1];
 
-            if (!read_numeric(&view, ptr, &value)) {
+            const int nonzero_flag = is_nonzero_finite(&view, ptr);
+
+            if (nonzero_flag == -1) {
                 PyErr_SetString(PyExc_ValueError, "Unsupported dtype or NaN/Inf encountered");
                 goto fail;
             }
 
-            if (value != 0) {
+            if (nonzero_flag) {
                 Ai[index++] = (int32_t) j;
             }
 
@@ -291,6 +297,9 @@ static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, 
                 val = (double) PyLong_AsLong(py_value);
             } else if (PyFloat_Check(py_value)) {
                 val = PyFloat_AsDouble(py_value);
+            } else if (PyUnicode_Check(py_value)) {
+                // Check for non-zero string values
+                val = (double) PyUnicode_GET_LENGTH(py_value);
             } else {
                 PyErr_SetString(PyExc_TypeError, "inner lists must contain only numbers");
                 goto fail;
