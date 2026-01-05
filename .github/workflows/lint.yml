@@ -10,11 +10,11 @@ permissions:
 
 # Gives annoying duplicate code flags, ignoring for now
 env:
-  DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-  VALIDATE_JSCPD: false
+#  VALIDATE_JSCPD: false
+  LINTER_RULES_PATH: .
   VALIDATE_GIT_COMMITLINT: false
 #  JSCPD_CONFIG_FILE: .jscpd.json
-  PYTHON_MYPY_CONFIG_FILE: .mypy.ini
+#  PYTHON_MYPY_CONFIG_FILE: .mypy.ini
 
 jobs:
   lint:
