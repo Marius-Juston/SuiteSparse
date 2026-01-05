@@ -6,7 +6,9 @@
 #include "amd.h"
 
 
-static inline int is_nonzero_finite(const Py_buffer *view, const char *ptr) {
+static inline int
+is_nonzero_finite(const Py_buffer *view, const char *ptr)
+{
     // Check format type, handling for NULL
     const char *fmt = view->format ? view->format : "B";
     const char type = strchr("@<>!=", fmt[0]) && fmt[1] ? fmt[1] : fmt[0];
@@ -41,7 +43,9 @@ static inline int is_nonzero_finite(const Py_buffer *view, const char *ptr) {
     return 0;
 }
 
-static inline int copy_array(const int32_t *array, const size_t size, PyObject *list) {
+static inline int
+copy_array(const int32_t *array, const size_t size, PyObject *list)
+{
     for (size_t i = 0; i < size; i++) {
         PyObject *idx = PyLong_FromLong(array[i]);
 
@@ -55,7 +59,9 @@ static inline int copy_array(const int32_t *array, const size_t size, PyObject *
     return 1;
 }
 
-static inline int copy_arrayd(const double *array, const size_t size, PyObject *list) {
+static inline int
+copy_arrayd(const double *array, const size_t size, PyObject *list)
+{
     for (size_t i = 0; i < size; i++) {
         PyObject *data = PyLong_FromDouble(array[i]);
 
@@ -69,7 +75,9 @@ static inline int copy_arrayd(const double *array, const size_t size, PyObject *
     return 1;
 }
 
-static inline PyObject *_numpy_array(PyObject *obj, int verbose, int aggressive, double dense) {
+static inline PyObject *
+_numpy_array(PyObject *obj, int verbose, int aggressive, double dense)
+{
     Py_buffer view;
     if (PyObject_GetBuffer(obj, &view, PyBUF_FORMAT | PyBUF_STRIDED | PyBUF_ND) == -1) {
         return NULL;
@@ -85,11 +93,12 @@ static inline PyObject *_numpy_array(PyObject *obj, int verbose, int aggressive,
     const Py_ssize_t cols = view.shape[1];
 
     if (rows != cols) {
-        PyErr_SetString(PyExc_ValueError, "Expected a square matrix with equal number of rows and columns");
+        PyErr_SetString(PyExc_ValueError,
+                        "Expected a square matrix with equal number of rows and columns");
         goto fail;
     }
 
-    const int32_t n = (int32_t) rows;
+    const int32_t n = (int32_t)rows;
 
     const char *data = view.buf;
     int32_t count = 0;
@@ -142,7 +151,7 @@ static inline PyObject *_numpy_array(PyObject *obj, int verbose, int aggressive,
             }
 
             if (nonzero_flag) {
-                Ai[index++] = (int32_t) j;
+                Ai[index++] = (int32_t)j;
             }
 
             if (index >= count) {
@@ -152,7 +161,6 @@ static inline PyObject *_numpy_array(PyObject *obj, int verbose, int aggressive,
     }
 
 loop_exit:
-
 
     int *version = PyMem_Calloc(3, sizeof(int));
     if (!version) {
@@ -206,12 +214,16 @@ loop_exit:
             PyErr_WarnEx(PyExc_RuntimeWarning,
                          "Input matrix is OK for amd_order, but columns were not sorted, and/or duplicate entries were present. AMD had to do extra work before ordering the matrix. This is a warning, not an error.",
                          1);
-        } else {
+        }
+        else {
             if (result == AMD_OUT_OF_MEMORY) {
                 PyErr_NoMemory();
-            } else if (result == AMD_INFO) {
-                PyErr_SetString(PyExc_ValueError, "Input arguments are not valid to the ordering");
-            } else {
+            }
+            else if (result == AMD_INFO) {
+                PyErr_SetString(PyExc_ValueError,
+                                "Input arguments are not valid to the ordering");
+            }
+            else {
                 PyErr_SetString(PyExc_ValueError, "Ordering failed");
             }
             goto fail;
@@ -261,10 +273,12 @@ fail:
     return NULL;
 }
 
-static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, double dense) {
+static inline PyObject *
+_list_array(PyObject *obj, int verbose, int aggressive, double dense)
+{
     const Py_ssize_t rows = PyList_Size(obj);
 
-    const int32_t n = (int32_t) rows;
+    const int32_t n = (int32_t)rows;
     int32_t count = 0;
 
     int32_t *Ap = PyMem_Calloc(rows + 1, sizeof(int32_t));
@@ -285,7 +299,8 @@ static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, 
         const Py_ssize_t cols = PyList_Size(py_inner_list);
 
         if (rows != cols) {
-            PyErr_SetString(PyExc_TypeError, "lists must have the same length, to be a square matrix");
+            PyErr_SetString(PyExc_TypeError,
+                            "lists must have the same length, to be a square matrix");
             goto fail;
         }
 
@@ -294,13 +309,16 @@ static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, 
             double val;
 
             if (PyLong_Check(py_value)) {
-                val = (double) PyLong_AsLong(py_value);
-            } else if (PyFloat_Check(py_value)) {
+                val = (double)PyLong_AsLong(py_value);
+            }
+            else if (PyFloat_Check(py_value)) {
                 val = PyFloat_AsDouble(py_value);
-            } else if (PyUnicode_Check(py_value)) {
+            }
+            else if (PyUnicode_Check(py_value)) {
                 // Check for non-zero string values
-                val = (double) PyUnicode_GET_LENGTH(py_value);
-            } else {
+                val = (double)PyUnicode_GET_LENGTH(py_value);
+            }
+            else {
                 PyErr_SetString(PyExc_TypeError, "inner lists must contain only numbers");
                 goto fail;
             }
@@ -312,7 +330,6 @@ static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, 
 
         Ap[i + 1] = count;
     }
-
 
     int32_t *Ai = PyMem_Calloc(count, sizeof(int32_t));
     if (!Ai) {
@@ -332,15 +349,17 @@ static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, 
             double val;
 
             if (PyLong_Check(py_value)) {
-                val = (double) PyLong_AsLong(py_value);
-            } else if (PyFloat_Check(py_value)) {
+                val = (double)PyLong_AsLong(py_value);
+            }
+            else if (PyFloat_Check(py_value)) {
                 val = PyFloat_AsDouble(py_value);
-            } else {
+            }
+            else {
                 continue;
             }
 
             if (val != 0) {
-                Ai[index++] = (int32_t) j;
+                Ai[index++] = (int32_t)j;
             }
 
             if (index >= count) {
@@ -350,7 +369,6 @@ static inline PyObject *_list_array(PyObject *obj, int verbose, int aggressive, 
     }
 
 loop_exit:
-
 
     int *version = PyMem_Calloc(3, sizeof(int));
     if (!version) {
@@ -404,12 +422,16 @@ loop_exit:
             PyErr_WarnEx(PyExc_RuntimeWarning,
                          "Input matrix is OK for amd_order, but columns were not sorted, and/or duplicate entries were present. AMD had to do extra work before ordering the matrix. This is a warning, not an error.",
                          1);
-        } else {
+        }
+        else {
             if (result == AMD_OUT_OF_MEMORY) {
                 PyErr_NoMemory();
-            } else if (result == AMD_INFO) {
-                PyErr_SetString(PyExc_ValueError, "Input arguments are not valid to the ordering");
-            } else {
+            }
+            else if (result == AMD_INFO) {
+                PyErr_SetString(PyExc_ValueError,
+                                "Input arguments are not valid to the ordering");
+            }
+            else {
                 PyErr_SetString(PyExc_ValueError, "Ordering failed");
             }
             goto fail;
@@ -456,7 +478,9 @@ fail:
     return NULL;
 }
 
-static PyObject *_sparse_system(PyObject *self, PyObject *args, PyObject *kwargs) {
+static PyObject *
+_sparse_system(PyObject *self, PyObject *args, PyObject *kwargs)
+{
     PyObject *obj;
     int verbose = 0;
     int aggressive = AMD_DEFAULT_AGGRESSIVE;
@@ -464,25 +488,29 @@ static PyObject *_sparse_system(PyObject *self, PyObject *args, PyObject *kwargs
 
     static char *kwlist[] = {"matrix", "dense", "aggressive", "verbose", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dpp", kwlist, &obj, &dense, &aggressive, &verbose)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dpp", kwlist, &obj, &dense, &aggressive,
+                                     &verbose)) {
         return NULL;
     }
 
     if (PyList_Check(obj)) {
         return _list_array(obj, verbose, aggressive, dense);
-    } else {
+    }
+    else {
         return _numpy_array(obj, verbose, aggressive, dense);
     }
 }
 
-static PyObject *_amd(PyObject *self, PyObject *args, PyObject *kwargs) {
+static PyObject *
+_amd(PyObject *self, PyObject *args, PyObject *kwargs)
+{
     return _sparse_system(self, args, kwargs);
 }
 
 
 static struct PyMethodDef methods[] = {
     {
-        "amd", (PyCFunction) _amd, METH_VARARGS | METH_KEYWORDS,
+        "amd", (PyCFunction)_amd, METH_VARARGS | METH_KEYWORDS,
         "Converts a dense symmetric matrix to CSC format and then performs AMD ( Approximate Minimum Degree ), returns the permutation matrix P."
     },
     {NULL, NULL, 0, NULL}
@@ -497,6 +525,8 @@ static struct PyModuleDef module = {
 };
 
 
-PyMODINIT_FUNC PyInit__amd(void) {
+PyMODINIT_FUNC
+PyInit__amd(void)
+{
     return PyModule_Create(&module);
 }
