@@ -51,8 +51,3 @@ push = false
 
 [tool.pylint.MAIN]
 extension-pkg-allow-list = ["suitesparse_amd._amd"]
-
-# Duplcate module name problem
-[tool.mypy]
-explicit_package_bases = true
-files = ["src"]
