@@ -13,23 +13,40 @@ env:
   LINTER_RULES_PATH: .
   ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true
 
-#  VALIDATE_GIT_COMMITLINT: false
+  #  VALIDATE_GIT_COMMITLINT: false
 
-  VALIDATE_CLANG_FORMAT: true
   VALIDATE_BIOME_FORMAT: true
   VALIDATE_BIOME_LINT: true
+  VALIDATE_CLANG_FORMAT: true
 
+  VALIDATE_SHELL_SHFMT: true
+  VALIDATE_GITHUB_ACTIONS_ZIZMOR: true
+
+  VALIDATE_GIT_MERGE_CONFLICT_MARKERS: true
+  VALIDATE_GITHUB_ACTIONS: true
+  VALIDATE_GITLEAKS: true
+  VALIDATE_HTML: true
+  VALIDATE_HTML_PRETTIER: true
+  VALIDATE_JSCPD: true
   VALIDATE_JSON: true
   VALIDATE_JSON_PRETTIER: true
-  VALIDATE_SHELL_SHFMT: true
-  VALIDATE_YAML_PRETTIER: true
-  VALIDATE_GITHUB_ACTIONS_ZIZMOR: true
-  VALIDATE_MARKDOWN_PRETTIER: true
+
   VALIDATE_MARKDOWN: true
+  VALIDATE_MARKDOWN_PRETTIER: true
+  VALIDATE_NATURAL_LANGUAGE: true
+
+  VALIDATE_PYTHON: true
   VALIDATE_PYTHON_BLACK: true
+  VALIDATE_PYTHON_FLAKE8: true
   VALIDATE_PYTHON_ISORT: true
+  VALIDATE_PYTHON_MYPY: true
+  VALIDATE_PYTHON_PYLINT: true
   VALIDATE_PYTHON_RUFF: true
   VALIDATE_PYTHON_RUFF_FORMAT: true
+
+  VALIDATE_XML: true
+  VALIDATE_YAML: true
+  VALIDATE_YAML_PRETTIER: true
 jobs:
   lint:
     # Super-linter workflow running in check only mode
@@ -90,6 +107,8 @@ jobs:
           FIX_PYTHON_RUFF: true
           FIX_PYTHON_RUFF_FORMAT: true
 
+          FIX_HTML_PRETTIER: true
+          FIX_NATURAL_LANGUAGE: true
           # To reuse the same Super-linter configuration that you use in the
           # lint job without duplicating it, see
           # https://github.com/super-linter/super-linter/blob/main/docs/run-linter-locally.md#share-environment-variables-between-environments
