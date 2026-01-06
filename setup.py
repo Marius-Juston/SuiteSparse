@@ -18,9 +18,9 @@ amd_config_dir = os.path.join("SuiteSparse", "SuiteSparse_config")
 amd_sources = glob(os.path.join(amd_source_dir, "*.c"))
 amd_config_sources = glob(os.path.join(amd_config_dir, "*.c"))
 
-define_macros: Union[Sequence[tuple[str, Union[str, None]]], None] = []
+define_macros: Union[list[tuple[str, Union[str, None]]], None] = []
 
-compilation_flags: Sequence[str] = []
+compilation_flags: Union[list[str], None] = []
 
 if sys.platform == "win32":
     define_macros += [
