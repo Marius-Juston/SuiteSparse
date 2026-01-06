@@ -406,8 +406,7 @@ class TestNumpy(unittest.TestCase):
 
             p, _ = amd(matrix, dense_permutation=True)
 
-            self.assertTrue(np.allclose(matrix, p),
-                            f"Failed to handle numpy array of type: {dtype}")  # pylint: disable=line-too-long
+            self.assertTrue(np.allclose(matrix, p), f"Failed to handle numpy array of type: {dtype}")  # pylint: disable=line-too-long
 
     def test_two_d_square_identity(self):
         """
