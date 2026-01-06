@@ -39,9 +39,9 @@ References
 """
 
 import numbers
-from typing import Sequence, Tuple, List, TYPE_CHECKING, Any, Union
+from typing import Sequence, Tuple, TYPE_CHECKING, Any, Union, TypeGuard
 
-from . import _amd as _c_ext # pylint: disable=no-name-in-module
+from . import _amd as _c_ext  # pylint: disable=no-name-in-module
 
 try:
     import torch
@@ -69,6 +69,10 @@ AMD_DEFAULT_AGGRESSIVE = bool(getattr(_c_ext, "AMD_DEFAULT_AGGRESSIVE", 1))
 AMD_INFO = getattr(_c_ext, "AMD_INFO", 20)
 
 
+def _is_torch_tensor(x: Any) -> TypeGuard["Tensor"]:
+    return HAS_PYTORCH and isinstance(x, torch.Tensor)
+
+
 def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
         *
         ,
@@ -76,7 +80,7 @@ def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
         aggressive: bool = AMD_DEFAULT_AGGRESSIVE,
         verbose: bool = False,
         dense_permutation: bool = True
-        ) -> Tuple[Any, List[float]]:
+        ) -> Tuple[Sequence[int], Sequence[float]]:
     """
     Compute an Approximate Minimum Degree (AMD) symmetric ordering.
 
@@ -222,9 +226,7 @@ def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
     >>> ordered_A = full_P @ A @ full_P.T # Ordered A matrx
     """
 
-    is_torch = HAS_PYTORCH and isinstance(matrix, torch.Tensor)
-
-    if is_torch:
+    if _is_torch_tensor(matrix):
         device = matrix.device
         dtype = matrix.dtype
         matrix_ = matrix.detach().cpu().numpy()
@@ -238,7 +240,7 @@ def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
 
         is_numpy = HAS_NUMPY and isinstance(matrix, np.ndarray)
 
-        if is_torch:
+        if _is_torch_tensor(matrix):
             permutation_out = torch.zeros((n, n), dtype=dtype, device=device)
             permutation_out[torch.arange(n), permutation] = 1
         elif is_numpy:
