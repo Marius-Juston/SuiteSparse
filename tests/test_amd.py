@@ -129,7 +129,7 @@ class TestList(unittest.TestCase):
             A valid permutation is returned even if values are strings, provided
             the structure is interpretable.
         """
-        matrix = [[0, 0], [0, 's']]
+        matrix = [[0, 0], [0, "s"]]
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -141,13 +141,15 @@ class TestList(unittest.TestCase):
 
         Asserts:
             - RuntimeWarning: Is issued when non-numeric types are processed in specific contexts.
-            - Correctness: The resulting permutation reverses the order [3, 2, 1, 0] for this 
+            - Correctness: The resulting permutation reverses the order [3, 2, 1, 0] for this
             specific pattern.
         """
-        matrix = [['a', 'bc', 'd', 'e'],
-                  ['ff', 'gg', '', ''],
-                  ['qq', '', 'q', ''],
-                  ['f', '', '', 'laugh']]
+        matrix = [
+            ["a", "bc", "d", "e"],
+            ["ff", "gg", "", ""],
+            ["qq", "", "q", ""],
+            ["f", "", "", "laugh"],
+        ]
 
         with self.assertWarns(RuntimeWarning):
             p, _ = amd(matrix, dense_permutation=False)
@@ -202,10 +204,7 @@ class TestList(unittest.TestCase):
         Asserts:
             Permutation pushes index 0 to the end: $[3, 2, 1, 0]$.
         """
-        matrix = [[1, 1, 1, 1],
-                  [1, 1, 0, 0],
-                  [1, 0, 1, 0],
-                  [1, 0, 0, 1]]
+        matrix = [[1, 1, 1, 1], [1, 1, 0, 0], [1, 0, 1, 0], [1, 0, 0, 1]]
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -221,10 +220,7 @@ class TestList(unittest.TestCase):
         Asserts:
             Expected permutation: $[1, 2, 0, 3]$.
         """
-        matrix = [[1, 0, 0, 1],
-                  [0, 1, 0, 0],
-                  [0, 0, 1, 0],
-                  [1, 0, 0, 1]]
+        matrix = [[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -237,10 +233,7 @@ class TestList(unittest.TestCase):
         Asserts:
             Expected permutation: $[1, 2, 0, 3]$.
         """
-        matrix = [[1, 0, 0, 1],
-                  [0, 1, 1, 0],
-                  [0, 1, 1, 0],
-                  [1, 0, 0, 1]]
+        matrix = [[1, 0, 0, 1], [0, 1, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1]]
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -253,10 +246,7 @@ class TestList(unittest.TestCase):
         Asserts:
             Expected permutation: $[3, 0, 1, 2]$.
         """
-        matrix = [[1, 1, 1, 0],
-                  [1, 1, 1, 0],
-                  [1, 1, 1, 1],
-                  [0, 0, 1, 1]]
+        matrix = [[1, 1, 1, 0], [1, 1, 1, 0], [1, 1, 1, 1], [0, 0, 1, 1]]
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -280,16 +270,16 @@ class TestList(unittest.TestCase):
 
         base_dir = Path(__file__).parent
 
-        with open(base_dir / "P.csv", encoding='utf-8') as f:
-            expected_p = list(map(int, f.readline().split(',')))
+        with open(base_dir / "P.csv", encoding="utf-8") as f:
+            expected_p = list(map(int, f.readline().split(",")))
 
         n = len(expected_p)
 
         matrix = [[0 for _ in range(n)] for _ in range(n)]
 
-        with open(base_dir / "A.csv", encoding='utf-8') as f:
+        with open(base_dir / "A.csv", encoding="utf-8") as f:
             for line in f.readlines():
-                data = list(map(int, line.split(',')))
+                data = list(map(int, line.split(",")))
 
                 matrix[data[0]][data[1]] = data[2]
 
@@ -355,7 +345,7 @@ class TestNumpy(unittest.TestCase):
             The wrapper correctly extracts the sparsity pattern even if the
             data type is `object` containing strings.
         """
-        matrix = np.array([[0, 0], [0, 's']])
+        matrix = np.array([[0, 0], [0, "s"]])
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -408,7 +398,7 @@ class TestNumpy(unittest.TestCase):
             np.float128,
             np.complex64,
             np.complex128,
-            np.complex256
+            np.complex256,
         ]
 
         for dtype in datatypes:
@@ -416,8 +406,7 @@ class TestNumpy(unittest.TestCase):
 
             p, _ = amd(matrix, dense_permutation=True)
 
-            self.assertTrue(np.allclose(matrix, p),
-                            f"Failed to handle numpy array of type: {dtype}")
+            self.assertTrue(np.allclose(matrix, p), f"Failed to handle numpy array of type: {dtype}")
 
     def test_two_d_square_identity(self):
         """
@@ -437,10 +426,7 @@ class TestNumpy(unittest.TestCase):
         Validates AMD ordering on a 4x4 NumPy matrix (Test Case 1).
         Equivalent to `TestList.test_two_d_square_simple`.
         """
-        matrix = np.array([[1, 1, 1, 1],
-                           [1, 1, 0, 0],
-                           [1, 0, 1, 0],
-                           [1, 0, 0, 1]])
+        matrix = np.array([[1, 1, 1, 1], [1, 1, 0, 0], [1, 0, 1, 0], [1, 0, 0, 1]])
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -451,10 +437,7 @@ class TestNumpy(unittest.TestCase):
         Validates AMD ordering on a 4x4 NumPy matrix (Test Case 2).
         Equivalent to `TestList.test_two_d_square_simple_2`.
         """
-        matrix = np.array([[1, 0, 0, 1],
-                           [0, 1, 0, 0],
-                           [0, 0, 1, 0],
-                           [1, 0, 0, 1]])
+        matrix = np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]])
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -465,10 +448,7 @@ class TestNumpy(unittest.TestCase):
         Validates AMD ordering on a 4x4 NumPy matrix (Test Case 3).
         Equivalent to `TestList.test_two_d_square_simple_3`.
         """
-        matrix = np.array([[1, 0, 0, 1],
-                           [0, 1, 1, 0],
-                           [0, 1, 1, 0],
-                           [1, 0, 0, 1]])
+        matrix = np.array([[1, 0, 0, 1], [0, 1, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1]])
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -479,10 +459,7 @@ class TestNumpy(unittest.TestCase):
         Validates AMD ordering on a 4x4 NumPy matrix (Test Case 4).
         Equivalent to `TestList.test_two_d_square_simple_4`.
         """
-        matrix = np.array([[1, 1, 1, 0],
-                           [1, 1, 1, 0],
-                           [1, 1, 1, 1],
-                           [0, 0, 1, 1]])
+        matrix = np.array([[1, 1, 1, 0], [1, 1, 1, 0], [1, 1, 1, 1], [0, 0, 1, 1]])
 
         p, _ = amd(matrix, dense_permutation=False)
 
@@ -500,16 +477,16 @@ class TestNumpy(unittest.TestCase):
 
         base_dir = Path(__file__).parent
 
-        with open(base_dir / "P.csv", encoding='utf-8') as f:
-            expected_p = list(map(int, f.readline().split(',')))
+        with open(base_dir / "P.csv", encoding="utf-8") as f:
+            expected_p = list(map(int, f.readline().split(",")))
 
         n = len(expected_p)
 
         matrix = [[0 for _ in range(n)] for _ in range(n)]
 
-        with open(base_dir / "A.csv", encoding='utf-8') as f:
+        with open(base_dir / "A.csv", encoding="utf-8") as f:
             for line in f.readlines():
-                data = list(map(int, line.split(',')))
+                data = list(map(int, line.split(",")))
 
                 matrix[data[0]][data[1]] = data[2]
 
@@ -520,5 +497,5 @@ class TestNumpy(unittest.TestCase):
         self.assertEqual(p, expected_p)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

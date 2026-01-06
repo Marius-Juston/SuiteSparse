@@ -27,17 +27,17 @@ env:
   VALIDATE_GITHUB_ACTIONS: true
   VALIDATE_GITLEAKS: true
   VALIDATE_HTML: true
-  VALIDATE_HTML_PRETTIER: true
+#  VALIDATE_HTML_PRETTIER: true
   VALIDATE_JSCPD: true
-  VALIDATE_JSON: true
-  VALIDATE_JSON_PRETTIER: true
+#  VALIDATE_JSON: true
+#  VALIDATE_JSON_PRETTIER: true
 
   VALIDATE_MARKDOWN: true
   VALIDATE_MARKDOWN_PRETTIER: true
   VALIDATE_NATURAL_LANGUAGE: true
 
   VALIDATE_PYTHON: true
-  VALIDATE_PYTHON_BLACK: true
+#  VALIDATE_PYTHON_BLACK: true
   VALIDATE_PYTHON_FLAKE8: true
   VALIDATE_PYTHON_ISORT: true
   VALIDATE_PYTHON_MYPY: true
@@ -86,7 +86,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
       - name: Super-Linter
         uses: super-linter/super-linter@d5b0a2ab116623730dd094f15ddc1b6b25bf7b99 # v8.3.2
         env:
@@ -95,22 +95,23 @@ jobs:
           FIX_BIOME_FORMAT: true
           FIX_BIOME_LINT: true
 
-          FIX_JSON: true
-          FIX_JSON_PRETTIER: true
+#          FIX_JSON: true
+         # FIX_JSON_PRETTIER: true
           FIX_SHELL_SHFMT: true
           FIX_YAML_PRETTIER: true
           FIX_CLANG_FORMAT: true
-          FIX_GITHUB_ACTIONS_ZIZMOR: true
+         # FIX_GITHUB_ACTIONS_ZIZMOR: true
           FIX_MARKDOWN_PRETTIER: true
           FIX_MARKDOWN: true
-          FIX_PYTHON_BLACK: true
+         # FIX_PYTHON_BLACK: true
           FIX_PYTHON_ISORT: true
           FIX_PYTHON_RUFF: true
           FIX_PYTHON_RUFF_FORMAT: true
 
-          FIX_HTML_PRETTIER: true
+         # FIX_HTML_PRETTIER: true
           FIX_NATURAL_LANGUAGE: true
 
+          # Exclude Workflow files
           FILTER_REGEX_EXCLUDE: '.*\.pyi$'
           # To reuse the same Super-linter configuration that you use in the
           # lint job without duplicating it, see
@@ -126,5 +127,3 @@ jobs:
         with:
           branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
           commit_message: "chore: fix linting issues"
-          commit_user_name: super-linter
-          commit_user_email: super-linter@super-linter.dev

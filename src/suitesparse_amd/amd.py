@@ -39,7 +39,7 @@ References
 """
 
 import numbers
-from typing import Sequence, Tuple, TYPE_CHECKING, Any, Union, TypeGuard
+from typing import TYPE_CHECKING, Any, Sequence, Tuple, TypeGuard, Union
 
 from . import _amd as _c_ext  # pylint: disable=no-name-in-module
 
@@ -73,14 +73,14 @@ def _is_torch_tensor(x: Any) -> TypeGuard["Tensor"]:
     return HAS_PYTORCH and isinstance(x, torch.Tensor)
 
 
-def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
-        *
-        ,
-        dense: float = AMD_DEFAULT_DENSE,
-        aggressive: bool = AMD_DEFAULT_AGGRESSIVE,
-        verbose: bool = False,
-        dense_permutation: bool = True
-        ) -> Tuple[Sequence[int], Sequence[float]]:
+def amd(
+    matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
+    *,
+    dense: float = AMD_DEFAULT_DENSE,
+    aggressive: bool = AMD_DEFAULT_AGGRESSIVE,
+    verbose: bool = False,
+    dense_permutation: bool = True,
+) -> Tuple[Sequence[int], Sequence[float]]:
     """
     Compute an Approximate Minimum Degree (AMD) symmetric ordering.
 

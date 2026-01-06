@@ -7,7 +7,6 @@
 #include <math.h>
 #include <amd.h>
 
-
 static inline int
 is_nonzero_finite(const Py_buffer *view, const char *ptr)
 {
@@ -39,7 +38,8 @@ is_nonzero_finite(const Py_buffer *view, const char *ptr)
     // Handles all integer types, all integers have all-zero bytes
     const char *end = ptr + view->itemsize;
     while (ptr < end) {
-        if (*ptr++) return 1;
+        if (*ptr++)
+            return 1;
     }
 
     return 0;
@@ -79,9 +79,7 @@ copy_arrayd(const double *array, const size_t size, PyObject *list)
 
 static inline int
 run_amd(const int32_t *Ai, const int32_t *Ap, const int32_t n, const int verbose,
-        const int aggressive, const double dense,
-        double **Info_out,
-        int32_t **P_out)
+        const int aggressive, const double dense, double **Info_out, int32_t **P_out)
 {
     double *Control = NULL;
     double *Info = NULL;
@@ -143,7 +141,9 @@ run_amd(const int32_t *Ai, const int32_t *Ap, const int32_t n, const int verbose
     if (result != AMD_OK) {
         if (result == AMD_OK_BUT_JUMBLED) {
             PyErr_WarnEx(PyExc_RuntimeWarning,
-                         "Input matrix is OK for amd_order, but columns were not sorted, and/or duplicate entries were present. AMD had to do extra work before ordering the matrix. This is a warning, not an error.",
+                         "Input matrix is OK for amd_order, but columns were not sorted, "
+                         "and/or duplicate entries were present. AMD had to do extra work "
+                         "before ordering the matrix. This is a warning, not an error.",
                          1);
         }
         else {
@@ -176,7 +176,7 @@ cleanup:
 }
 
 static inline int
-create_output(PyObject * *obj, const int n, const int32_t *P, const double *Info)
+create_output(PyObject **obj, const int n, const int32_t *P, const double *Info)
 {
     *obj = NULL;
 
@@ -254,8 +254,7 @@ _numpy_array(PyObject *obj, const int verbose, const int aggressive, const doubl
 
     for (Py_ssize_t i = 0; i < rows; i++) {
         for (Py_ssize_t j = 0; j < cols; j++) {
-            const char *ptr = data + i * view.strides[0]
-                              + j * view.strides[1];
+            const char *ptr = data + i * view.strides[0] + j * view.strides[1];
 
             const int nonzero_flag = is_nonzero_finite(&view, ptr);
 
@@ -282,8 +281,7 @@ _numpy_array(PyObject *obj, const int verbose, const int aggressive, const doubl
 
     for (Py_ssize_t i = 0; i < rows; i++) {
         for (Py_ssize_t j = 0; j < cols; j++) {
-            const char *ptr = data + i * view.strides[0]
-                              + j * view.strides[1];
+            const char *ptr = data + i * view.strides[0] + j * view.strides[1];
 
             const int nonzero_flag = is_nonzero_finite(&view, ptr);
 
@@ -471,23 +469,13 @@ _amd(PyObject *self, PyObject *args, PyObject *kwargs)
     return _sparse_system(self, args, kwargs);
 }
 
-
 static struct PyMethodDef methods[] = {
-    {
-        "amd", (PyCFunction)_amd, METH_VARARGS | METH_KEYWORDS,
-        "Converts a dense symmetric matrix to CSC format and then performs AMD ( Approximate Minimum Degree ), returns the permutation matrix P."
-    },
-    {NULL, NULL, 0, NULL}
-};
+    {"amd", (PyCFunction)_amd, METH_VARARGS | METH_KEYWORDS,
+     "Converts a dense symmetric matrix to CSC format and then performs AMD ( Approximate "
+     "Minimum Degree ), returns the permutation matrix P."},
+    {NULL, NULL, 0, NULL}};
 
-static struct PyModuleDef module = {
-    PyModuleDef_HEAD_INIT,
-    "_amd",
-    NULL,
-    -1,
-    methods
-};
-
+static struct PyModuleDef module = {PyModuleDef_HEAD_INIT, "_amd", NULL, -1, methods};
 
 PyMODINIT_FUNC
 PyInit__amd(void)
