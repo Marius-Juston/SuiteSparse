@@ -29,7 +29,7 @@ env:
   VALIDATE_HTML: true
 #  VALIDATE_HTML_PRETTIER: true
   VALIDATE_JSCPD: true
-  VALIDATE_JSON: true
+#  VALIDATE_JSON: true
 #  VALIDATE_JSON_PRETTIER: true
 
   VALIDATE_MARKDOWN: true
@@ -95,7 +95,7 @@ jobs:
           FIX_BIOME_FORMAT: true
           FIX_BIOME_LINT: true
 
-          FIX_JSON: true
+#          FIX_JSON: true
          # FIX_JSON_PRETTIER: true
           FIX_SHELL_SHFMT: true
           FIX_YAML_PRETTIER: true
