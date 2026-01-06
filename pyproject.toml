@@ -51,3 +51,6 @@ push = false
 
 [tool.pylint.MAIN]
 extension-pkg-allow-list = ["suitesparse_amd._amd"]
+
+[tool.pylint.FORMAT]
+max-line-length = 120
