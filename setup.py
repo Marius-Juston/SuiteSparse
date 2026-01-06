@@ -32,7 +32,7 @@ else:
     compilation_flags += ["-O3"]
 
 setup(
-    version="0.3.4",
+    version="0.3.5",
     ext_modules=[
         Extension(
             name="suitesparse_amd._amd",
