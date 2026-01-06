@@ -10,12 +10,9 @@
 | GITLEAKS                   | Pass ✅           |
 | GIT_MERGE_CONFLICT_MARKERS | Pass ✅           |
 | JSCPD                      | Pass ✅           |
-| JSON                       | Pass ✅           |
-| JSON_PRETTIER              | Pass ✅           |
 | MARKDOWN                   | Pass ✅           |
 | MARKDOWN_PRETTIER          | Pass ✅           |
 | NATURAL_LANGUAGE           | Pass ✅           |
-| PYTHON_BLACK               | Pass ✅           |
 | PYTHON_PYLINT              | Pass ✅           |
 | PYTHON_FLAKE8              | Pass ✅           |
 | PYTHON_ISORT               | Pass ✅           |
