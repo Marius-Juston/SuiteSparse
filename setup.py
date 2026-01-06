@@ -7,8 +7,7 @@ import sys
 from glob import glob
 from typing import Union
 
-from setuptools import Extension
-from setuptools import setup
+from setuptools import Extension, setup
 
 amd_source_dir = os.path.join("SuiteSparse", "AMD", "Source")
 amd_include_dir = os.path.join("SuiteSparse", "AMD", "Include")
@@ -28,14 +27,20 @@ if sys.platform == "win32":
         ("SUITESPARSE_CONFIG_HAS_OPENMP", "0"),
         ("SUITESPARSE_TIMER_ENABLED", "0"),
     ]
-    compilation_flags += ['/O2', "-DNTIMER"]
+    compilation_flags += ["/O2", "-DNTIMER"]
 else:
-    compilation_flags += ['-O3']
+    compilation_flags += ["-O3"]
 
-setup(version="0.2.0",
-      ext_modules=[Extension(name="suitesparse_amd._amd",
-                             sources=['src/suitesparse_amd/_amd.c'] + amd_sources + amd_config_sources,
-                             include_dirs=[amd_include_dir, amd_config_dir],
-                             language="c",
-                             define_macros=define_macros,
-                             extra_compile_args=compilation_flags, )])
+setup(
+    version="0.2.0",
+    ext_modules=[
+        Extension(
+            name="suitesparse_amd._amd",
+            sources=["src/suitesparse_amd/_amd.c"] + amd_sources + amd_config_sources,
+            include_dirs=[amd_include_dir, amd_config_dir],
+            language="c",
+            define_macros=define_macros,
+            extra_compile_args=compilation_flags,
+        )
+    ],
+)

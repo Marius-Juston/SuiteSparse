@@ -8,7 +8,6 @@ from pprint import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from suitesparse_amd import amd
 
 
@@ -89,5 +88,5 @@ def main():
     print("Previous: ", mask.sum(), "New:", mask_n.sum())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
