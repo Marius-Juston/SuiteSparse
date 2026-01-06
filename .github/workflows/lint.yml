@@ -48,8 +48,6 @@ env:
   VALIDATE_XML: true
   VALIDATE_YAML: true
   VALIDATE_YAML_PRETTIER: true
-
-  PRETTIER_COMMAND_OPTIONS: "--ignore-path ./.github/workflows/*.yml"
 jobs:
   lint:
     # Super-linter workflow running in check only mode
