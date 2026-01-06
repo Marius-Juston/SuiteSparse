@@ -11,6 +11,7 @@ permissions:
 # Gives annoying duplicate code flags, ignoring for now
 env:
   LINTER_RULES_PATH: .
+  PYTHON_MYPY_CONFIG_FILE: .mypy.ini
   ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true
 
   #  VALIDATE_GIT_COMMITLINT: false
