@@ -52,6 +52,10 @@ copy_array(const int32_t *array, const size_t size, PyObject *list)
         PyObject *idx = PyLong_FromLong(array[i]);
 
         if (!idx) {
+            for (size_t j = 0; j < i; ++j) {
+                PyObject *old = PyList_GET_ITEM(list, j);
+                Py_DECREF(old);
+            }
             return 0;
         }
 
@@ -68,6 +72,10 @@ copy_arrayd(const double *array, const size_t size, PyObject *list)
         PyObject *data = PyLong_FromDouble(array[i]);
 
         if (!data) {
+            for (size_t j = 0; j < i; ++j) {
+                PyObject *old = PyList_GET_ITEM(list, j);
+                Py_DECREF(old);
+            }
             return 0;
         }
 
@@ -178,37 +186,50 @@ cleanup:
 static inline int
 create_output(PyObject **obj, const int n, const int32_t *P, const double *Info)
 {
+    PyObject *permutation = NULL;
+    PyObject *info = NULL;
+    PyObject *out_temp = NULL;
+
     *obj = NULL;
 
-    PyObject *permutation = PyList_New(n);
+    permutation = PyList_New(n);
     if (!permutation) {
-        return false;
+        goto error;
     }
 
     if (!copy_array(P, n, permutation)) {
-        return false;
+        goto error;
     }
 
-    PyObject *info = PyList_New(AMD_INFO);
+    info = PyList_New(AMD_INFO);
     if (!info) {
-        return false;
+        goto error;
     }
 
     if (!copy_arrayd(Info, AMD_INFO, info)) {
-        return false;
+        goto error;
     }
 
-    PyObject *out_temp = PyTuple_New(2);
+    out_temp = PyTuple_New(2);
     if (!out_temp) {
-        return false;
+        goto error;
     }
 
     PyTuple_SET_ITEM(out_temp, 0, permutation);
     PyTuple_SET_ITEM(out_temp, 1, info);
 
+    permutation = NULL;
+    info = NULL;
+
     *obj = out_temp;
 
     return true;
+error:
+    Py_XDECREF(permutation);
+    Py_XDECREF(info);
+    Py_XDECREF(out_temp);
+
+    return false;
 }
 
 static inline PyObject *
