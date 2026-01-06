@@ -1,3 +1,4 @@
 [flake8]
 per-file-ignores =
     *.pypi:E302
+max-line-length=120
