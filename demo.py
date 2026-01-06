@@ -1,3 +1,5 @@
+# type: ignore
+
 """
 Demo code for the AMD
 """
