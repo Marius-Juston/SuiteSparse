@@ -5,6 +5,7 @@ Setup compilation file for the AMD C Wrapper
 import os
 import sys
 from glob import glob
+from typing import Union, Sequence
 
 from setuptools import Extension
 from setuptools import setup
@@ -17,9 +18,9 @@ amd_config_dir = os.path.join("SuiteSparse", "SuiteSparse_config")
 amd_sources = glob(os.path.join(amd_source_dir, "*.c"))
 amd_config_sources = glob(os.path.join(amd_config_dir, "*.c"))
 
-define_macros: list[tuple[str, str]] = []
+define_macros: Union[Sequence[tuple[str, Union[str, None]]], None] = []
 
-compilation_flags: list[str] = []
+compilation_flags: Sequence[str] = []
 
 if sys.platform == "win32":
     define_macros += [

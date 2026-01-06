@@ -224,9 +224,7 @@ def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
     >>> ordered_A = full_P @ A @ full_P.T # Ordered A matrx
     """
 
-    is_torch = _is_torch_tensor(matrix)
-
-    if is_torch:
+    if _is_torch_tensor(matrix):
         device = matrix.device
         dtype = matrix.dtype
         matrix_ = matrix.detach().cpu().numpy()
@@ -240,7 +238,7 @@ def amd(matrix: Union[NDArray, Tensor, Sequence[Sequence[numbers.Real]]],
 
         is_numpy = HAS_NUMPY and isinstance(matrix, np.ndarray)
 
-        if is_torch:
+        if _is_torch_tensor(matrix):
             permutation_out = torch.zeros((n, n), dtype=dtype, device=device)
             permutation_out[torch.arange(n), permutation] = 1
         elif is_numpy:
