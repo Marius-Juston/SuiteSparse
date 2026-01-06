@@ -48,6 +48,8 @@ env:
   VALIDATE_XML: true
   VALIDATE_YAML: true
   VALIDATE_YAML_PRETTIER: true
+
+  PRETTIER_COMMAND_OPTIONS: "--ignore-path ./.github/workflows"
 jobs:
   lint:
     # Super-linter workflow running in check only mode
@@ -111,6 +113,7 @@ jobs:
           FIX_HTML_PRETTIER: true
           FIX_NATURAL_LANGUAGE: true
 
+          # Exclude Workflow files
           FILTER_REGEX_EXCLUDE: '.*\.pyi$'
           # To reuse the same Super-linter configuration that you use in the
           # lint job without duplicating it, see
